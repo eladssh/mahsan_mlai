@@ -42,7 +42,7 @@
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
             <!-- מיתוג המחסן -->
             <div class="flex items-center gap-3">
-                <div class="bg-emerald-50 p-2.5 rounded-xl text-slate-950 shadow-lg shadow-emerald-500/20">
+                <div class="bg-emerald-500 p-2.5 rounded-xl text-slate-950 shadow-lg shadow-emerald-500/20">
                     <i class="fa-solid fa-warehouse text-xl"></i>
                 </div>
                 <div>
@@ -450,23 +450,31 @@
             return url;
         }
 
-        // מפענח מזהה גיליון מכל קישור שיתוף שהמשתמש הדביק
+        // מפענח מזהה גיליון מכל קישור שיתוף שהמשתמש הדביק (תומך גם בקישורים רגילים וגם במזהים ארוכים)
         function extractSheetId(input) {
             if (!input) return "";
             input = input.trim();
             
-            // אם זה כבר ID נקי
-            if (/^[a-zA-Z0-9-_]{44}$/.test(input)) {
-                return input;
+            // אם מדובר בקישור "פרסם באינטרנט"
+            if (input.includes('/d/e/')) {
+                const matches = input.match(/\/d\/e\/([a-zA-Z0-9-_]+)/);
+                if (matches && matches[1]) {
+                    return matches[1];
+                }
             }
             
-            // חילוץ מקישור שיתוף רגיל
-            const matches = input.match(/\/d\/([a-zA-Z0-9-_]{44})/);
+            // חילוץ מקישור שיתוף / עריכה רגיל
+            const matches = input.match(/\/d\/([a-zA-Z0-9-_]+)/);
             if (matches && matches[1]) {
                 return matches[1];
             }
             
-            return input; // fallback
+            // אם זה כבר ID נקי
+            if (/^[a-zA-Z0-9-_]+$/.test(input)) {
+                return input;
+            }
+            
+            return input;
         }
 
         // --- מנגנון JSONP חסין CORS למשיכת נתונים ישירות מהקובץ המקומי ---
@@ -486,11 +494,11 @@
                     }
                 };
                 
-                // הגדרת טיימאאוט למקרה שאין רשת
+                // הגדרת טיימאאוט
                 const timeoutId = setTimeout(() => {
                     document.getElementById(callbackName)?.remove();
                     delete window[callbackName];
-                    reject(new Error("פג זמן ההתקשרות (Timeout) - ודא שיש חיבור אינטרנט והקובץ משותף"));
+                    reject(new Error("פג זמן ההתקשרות (Timeout)"));
                 }, 8000);
                 
                 const encodedTab = tabName ? `&sheet=${encodeURIComponent(tabName)}` : '';
@@ -504,11 +512,65 @@
                     clearTimeout(timeoutId);
                     document.getElementById(callbackName)?.remove();
                     delete window[callbackName];
-                    reject(new Error("שגיאת רשת בטעינת הגיליון (CORS/Network)"));
+                    reject(new Error("שגיאת רשת בטעינת הסקריפט"));
                 };
                 
                 document.body.appendChild(script);
             });
+        }
+
+        // מפענח קבצי CSV
+        function parseCSV(text) {
+            let lines = [];
+            let row = [""];
+            let inQuotes = false;
+            for (let i = 0; i < text.length; i++) {
+                let c = text[i];
+                let next = text[i+1];
+                if (c === '"') {
+                    if (inQuotes && next === '"') { row[row.length - 1] += '"'; i++; }
+                    else { inQuotes = !inQuotes; }
+                } else if (c === ',' && !inQuotes) {
+                    row.push('');
+                } else if ((c === '\r' || c === '\n') && !inQuotes) {
+                    if (c === '\r' && next === '\n') { i++; }
+                    lines.push(row);
+                    row = [''];
+                } else {
+                    row[row.length - 1] += c;
+                }
+            }
+            if (row.length > 1 || row[0] !== '') { lines.push(row); }
+            return lines;
+        }
+
+        // טוען ומפרסר נתוני CSV לטבלה
+        function parseAndLoadCSV(csvText) {
+            const parsedRows = parseCSV(csvText);
+            const freshData = [];
+            let rowCounter = 2;
+
+            for (let i = 1; i < parsedRows.length; i++) {
+                const columns = parsedRows[i];
+                if (columns.length < 3 || !columns[1]) continue;
+
+                const cat = columns[0] ? columns[0].trim() : 'כללי';
+                const name = columns[1] ? columns[1].trim() : '';
+                const qty = columns[2] ? columns[2].trim() : '-';
+                const rawImg = columns[3] ? columns[3].trim() : '';
+
+                freshData.push({
+                    id: rowCounter,
+                    category: cat,
+                    name: name,
+                    quantity: qty,
+                    image: parseDriveImageUrl(rawImg)
+                });
+                rowCounter++;
+            }
+
+            if (freshData.length === 0) throw new Error("No data parsed");
+            inventoryData = freshData;
         }
 
         // משיכת הנתונים וסנכרון חסין
@@ -526,53 +588,91 @@
             const sheetId = extractSheetId(currentSheetId);
             document.getElementById('current-sheet-id-label').textContent = sheetId ? "ID: " + sheetId.substring(0, 8) + "..." : "מזהה חסר";
 
-            try {
-                // קריאה ישירה באמצעות מנגנון JSONP שעוקף חסימות אבטחה מקומיות
-                const response = await fetchWithJSONP(sheetId, currentSheetTab);
-                
-                const rows = response.table.rows;
-                const freshData = [];
-                let rowCounter = 2;
+            const isPublished = sheetId.startsWith('2PACX') || sheetId.length > 50;
+            let dataLoaded = false;
 
-                rows.forEach(r => {
-                    if (!r || !r.c) return;
+            // ניסיון 1: קריאה ישירה באמצעות מנגנון ה-gviz API הציבורי של גוגל
+            if (!isPublished) {
+                try {
+                    const encodedTab = encodeURIComponent(currentSheetTab);
+                    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv${currentSheetTab ? `&sheet=${encodedTab}` : ''}`;
+                    const response = await fetch(url);
+                    if (response.ok) {
+                        const csvText = await response.text();
+                        parseAndLoadCSV(csvText);
+                        dataLoaded = true;
+                    }
+                } catch (e) {
+                    console.log("Direct fetch failed, falling back to JSONP...", e);
+                }
+            }
 
-                    // פונקציית עזר לחילוץ ערכים בטוח מתאי גוגל שיטס
-                    const getVal = (index) => {
-                        if (r.c[index] && r.c[index].v !== null && r.c[index].v !== undefined) {
-                            return r.c[index].v.toString().trim();
-                        }
-                        return '';
-                    };
+            // ניסיון 2: (חסין אבטחה ו-CORS) - פנייה בשיטת JSONP שעוקפת חסימות מקומיות בדפדפן
+            if (!dataLoaded && !isPublished) {
+                try {
+                    const response = await fetchWithJSONP(sheetId, currentSheetTab);
+                    const rows = response.table.rows;
+                    const freshData = [];
+                    let rowCounter = 2;
 
-                    const cat = getVal(0);
-                    const name = getVal(1);
-                    const qty = getVal(2) || '-';
-                    const rawImg = getVal(3);
+                    rows.forEach(r => {
+                        if (!r || !r.c) return;
 
-                    if (!name) return; // דילוג על שורות ריקות בטבלה
+                        const getVal = (index) => {
+                            if (r.c[index] && r.c[index].v !== null && r.c[index].v !== undefined) {
+                                return r.c[index].v.toString().trim();
+                            }
+                            return '';
+                        };
 
-                    freshData.push({
-                        id: rowCounter,
-                        category: cat || 'כללי',
-                        name: name,
-                        quantity: qty,
-                        image: parseDriveImageUrl(rawImg)
+                        const cat = getVal(0);
+                        const name = getVal(1);
+                        const qty = getVal(2) || '-';
+                        const rawImg = getVal(3);
+
+                        if (!name) return;
+
+                        freshData.push({
+                            id: rowCounter,
+                            category: cat || 'כללי',
+                            name: name,
+                            quantity: qty,
+                            image: parseDriveImageUrl(rawImg)
+                        });
+                        rowCounter++;
                     });
-                    rowCounter++;
-                });
 
-                if (freshData.length === 0) throw new Error("לא נמצאו נתונים בגיליון");
+                    if (freshData.length > 0) {
+                        inventoryData = freshData;
+                        dataLoaded = true;
+                    }
+                } catch (e) {
+                    console.log("JSONP fetch failed:", e);
+                }
+            }
 
-                inventoryData = freshData;
-                
+            // ניסיון 3: אם המשתמש התעקש להשתמש בקישור "פרסם באינטרנט"
+            if (!dataLoaded && isPublished) {
+                try {
+                    const url = `https://docs.google.com/spreadsheets/d/e/${sheetId}/pub?output=csv${currentSheetTab ? `&sheet=${encodeURIComponent(currentSheetTab)}` : ''}`;
+                    const response = await fetch(url);
+                    if (response.ok) {
+                        const csvText = await response.text();
+                        parseAndLoadCSV(csvText);
+                        dataLoaded = true;
+                    }
+                } catch (e) {
+                    console.log("Published CSV fetch failed:", e);
+                }
+            }
+
+            // עדכון הממשק בהתאם לתוצאות
+            if (dataLoaded) {
                 indicatorDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
-                indicatorText.textContent = "מחובר ל-Google Sheets (סנכרון חסין פעיל!)";
+                indicatorText.textContent = "מחובר ל-Google Sheets בזמן אמת!";
                 showToast("הנתונים סונכרנו בהצלחה מהענן!");
-
-            } catch (error) {
-                console.warn("Using offline fallback data due to:", error);
-                
+            } else {
+                console.warn("Using offline fallback data");
                 inventoryData = localBackupData.map(item => ({
                     ...item,
                     image: parseDriveImageUrl(item.image)
@@ -581,13 +681,12 @@
                 indicatorDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse";
                 indicatorText.textContent = "מצב לא מקוון. מציג גיבוי מקומי.";
                 showToast("לא מצליח לגשת לגיליון. מוצגים נתוני הגיבוי.", true);
-            } finally {
-                if (syncIcon) syncIcon.classList.remove('animate-spin');
-                document.getElementById('table-loader').classList.add('hidden');
-                
-                switchView(currentViewMode);
-                updateStats();
             }
+
+            if (syncIcon) syncIcon.classList.remove('animate-spin');
+            document.getElementById('table-loader').classList.add('hidden');
+            switchView(currentViewMode);
+            updateStats();
         }
 
         // עדכון סטטיסטיקות בממשק
