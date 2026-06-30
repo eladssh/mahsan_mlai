@@ -31,7 +31,7 @@
             <div class="flex items-center gap-4 text-slate-400">
                 <span>חיבור פעיל: <strong class="text-slate-300 font-mono text-[10px]" id="current-sheet-id-label">טוען מזהה...</strong></span>
                 <button onclick="toggleSetupModal()" class="text-emerald-400 hover:underline flex items-center gap-1">
-                    <i class="fa-solid fa-gear"></i> הגדרות חיבור חסין
+                    <i class="fa-solid fa-gear"></i> הגדרות חיבור ועריכה
                 </button>
             </div>
         </div>
@@ -42,17 +42,23 @@
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
             <!-- מיתוג המחסן -->
             <div class="flex items-center gap-3">
-                <div class="bg-emerald-50 p-2.5 rounded-xl text-slate-950 shadow-lg shadow-emerald-500/20">
+                <div class="bg-emerald-500 p-2.5 rounded-xl text-slate-950 shadow-lg shadow-emerald-500/20">
                     <i class="fa-solid fa-warehouse text-xl"></i>
                 </div>
                 <div>
                     <h1 class="text-xl font-black text-white tracking-tight">מלאי מחסן בזמן אמת</h1>
-                    <p class="text-slate-400 text-xs mt-0.5">סנכרון חסין לגוגל שיטס והצגת תמונות מהדרייב</p>
+                    <p class="text-slate-400 text-xs mt-0.5">סנכרון חסין לגוגל שיטס והעלאת תמונות מהשטח</p>
                 </div>
             </div>
             
             <!-- כפתורי פעולה מהירה -->
             <div class="flex flex-wrap items-center gap-2">
+                <!-- כפתור הוספת פריט - מופיע רק למנהל מחובר -->
+                <button id="admin-add-item-btn" onclick="toggleAddItemModal()" class="hidden bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition-all text-slate-950 font-bold px-4 py-2 rounded-xl flex items-center gap-2 text-xs shadow-md shadow-emerald-500/10">
+                    <i class="fa-solid fa-circle-plus"></i>
+                    הוסף פריט חדש
+                </button>
+
                 <button id="admin-login-btn" onclick="toggleAdminLoginModal()" class="bg-slate-800 hover:bg-slate-700 active:scale-95 transition-all text-white font-medium px-4 py-2 rounded-xl flex items-center gap-2 text-xs border border-slate-700">
                     <i class="fa-solid fa-user-shield"></i>
                     כניסת מנהל
@@ -129,7 +135,7 @@
                         <li>העתק את קישור השיתוף של התמונה והדבק אותו ישירות בעמודה <strong>"תמונה"</strong> (עמודה D) בגיליון.</li>
                     </ol>
                     <div class="p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-[11px] text-emerald-400">
-                        <i class="fa-solid fa-magic-wand-sparkles ml-1"></i> המערכת תמיר את הקישור אוטומטית לתצוגה ויזואלית חלקה!
+                        <i class="fa-solid fa-magic-wand-sparkles ml-1"></i> <strong>חדש:</strong> מנהלים יכולים להעלות קובץ תמונה ישירות מהמחשב או הטלפון והמערכת תעלה אותו לדרייב אוטומטית!
                     </div>
                 </div>
             </div>
@@ -244,12 +250,12 @@
                 הגדרות עריכה חיה (מנהל בלבד)
             </h3>
             <p class="text-[11px] text-slate-400 leading-relaxed mb-4">
-                כדי לאפשר עדכון כמות בלייב, יש להדביק כאן את כתובת ה-Apps Script Web App (ראה הוראות התקנה למטה) ולקבוע סיסמת מנהל משותפת.
+                כדי לאפשר עדכון כמויות והוספת פריטים בלייב, יש להדביק כאן את כתובת ה-Apps Script Web App ולקבוע סיסמת מנהל משותפת.
             </p>
 
             <div class="space-y-4 text-xs">
                 <div>
-                    <label class="block font-bold text-slate-400 mb-1">כתובת Web App לעדכון כמות:</label>
+                    <label class="block font-bold text-slate-400 mb-1">כתובת Web App לעדכון והוספה:</label>
                     <textarea id="scriptUrlInput" rows="2"
                            class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-rose-500 text-white"
                            placeholder="https://script.google.com/macros/s/.../exec"></textarea>
@@ -265,9 +271,6 @@
                         שמור הגדרות עריכה
                     </button>
                 </div>
-                <p class="text-[10px] text-slate-500 leading-relaxed">
-                    ⚠ זוהי הגנה בסיסית בלבד (סיסמה משותפת גלויה בקוד הדפדפן) - מתאימה לשימוש פנימי וסגור, לא לאתר ציבורי רגיש.
-                </p>
             </div>
         </div>
     </div>
@@ -293,7 +296,79 @@
         </div>
     </div>
 
+    <!-- מודל הוספת פריט חדש (למנהל בלבד) -->
+    <div id="add-item-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-md shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button onclick="toggleAddItemModal()" class="absolute left-4 top-4 text-slate-500 hover:text-slate-200">
+                <i class="fa-solid fa-xmark text-base"></i>
+            </button>
+            <h3 class="font-bold text-base text-white mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-circle-plus text-emerald-400"></i>
+                הוספת פריט חדש למלאי
+            </h3>
+            
+            <div class="space-y-4 text-xs">
+                <!-- קטגוריה -->
+                <div>
+                    <label class="block font-bold text-slate-400 mb-1">מכולה/קטגוריה:</label>
+                    <select id="newItemCategory" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <option value="תשורות">תשורות</option>
+                        <option value="חשמל">חשמל</option>
+                        <option value="ספר">ספרים</option>
+                        <option value="ערכת נהג">ערכת נהג</option>
+                    </select>
+                </div>
 
+                <!-- שם הפריט -->
+                <div>
+                    <label class="block font-bold text-slate-400 mb-1">שם הפריט:</label>
+                    <input type="text" id="newItemName" placeholder="הקלד שם פריט..." class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+
+                <!-- כמות -->
+                <div>
+                    <label class="block font-bold text-slate-400 mb-1">כמות ראשונית:</label>
+                    <input type="text" id="newItemQty" placeholder="לדוגמה: 45 או 3 קרטונים..." class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+
+                <!-- תמונה (קישור או העלאת קובץ) -->
+                <div>
+                    <label class="block font-bold text-slate-400 mb-1">בחירת תמונה לפריט:</label>
+                    
+                    <!-- טאבים לבחירת מקור תמונה -->
+                    <div class="flex gap-2 mb-2 bg-slate-950 p-1 rounded-lg border border-slate-800">
+                        <button onclick="switchImageSource('upload')" id="img-src-upload-btn" class="w-1/2 py-1.5 rounded-md text-[10px] font-bold bg-slate-800 text-white transition-all">העלאת קובץ</button>
+                        <button onclick="switchImageSource('link')" id="img-src-link-btn" class="w-1/2 py-1.5 rounded-md text-[10px] font-bold text-slate-400 hover:text-white transition-all">הדבקת קישור</button>
+                    </div>
+
+                    <!-- העלאת קובץ מהמכשיר -->
+                    <div id="image-source-upload" class="space-y-2">
+                        <div class="flex items-center justify-center w-full">
+                            <label class="flex flex-col items-center justify-center w-full h-24 border-2 border-slate-800 border-dashed rounded-lg cursor-pointer bg-slate-950 hover:bg-slate-800/30 transition">
+                                <div class="flex flex-col items-center justify-center pt-2 pb-2">
+                                    <i class="fa-solid fa-cloud-arrow-up text-slate-500 text-lg mb-1"></i>
+                                    <p class="text-[10px] text-slate-400 font-semibold" id="file-upload-label">לחץ לבחירת תמונה מהגלריה</p>
+                                </div>
+                                <input type="file" id="newItemFile" accept="image/*" class="hidden" onchange="handleFileSelected(this)">
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- קישור קיים מגוגל דרייב -->
+                    <div id="image-source-link" class="hidden">
+                        <input type="text" id="newItemImageUrl" placeholder="הדבק קישור שיתוף של גוגל דרייב..." class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <button id="add-item-submit-btn" onclick="submitNewItem()" class="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition text-slate-950 font-bold py-3 rounded-xl text-xs shadow-md shadow-emerald-500/10 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-save"></i>
+                        שמור פריט והעלה למלאי
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- מודל זום להגדלת תמונה בלחיצה -->
     <div id="zoom-modal" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4" onclick="closeZoomModal()">
@@ -329,6 +404,9 @@
         let inventoryData = [];
         let selectedCategory = 'all';
         let currentViewMode = 'table';
+        let currentImageSource = 'upload';
+        let selectedImageBase64 = null;
+        let selectedImageName = null;
 
         // נתוני גיבוי מקומיים למקרה של אופליין
         const localBackupData = [
@@ -489,27 +567,25 @@
             fetchLiveSheetData();
         });
 
-        // חילוץ ID ומזהי דרייב בצורה חסינה
+        // חילוץ ID ומזהי דרייב בצורה חסינה ויציבה לחלוטין (משתמש בשרת התמונות המהיר של גוגל)
         function parseDriveImageUrl(url) {
             if (!url) return '';
             url = url.trim();
             
-            const standardRegex = /https:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/;
-            const match = url.match(standardRegex);
-            if (match && match[1]) {
-                return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
-            }
+            // זיהוי ID מתוך מגוון פורמטים של קישורי דרייב
+            const patterns = [
+                /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/,
+                /drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/,
+                /docs\.google\.com\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/,
+                /id=([a-zA-Z0-9_-]+)/
+            ];
 
-            const idRegex = /[?&]id=([a-zA-Z0-9_-]+)/;
-            const matchId = url.match(idRegex);
-            if (matchId && matchId[1]) {
-                return `https://drive.google.com/thumbnail?id=${matchId[1]}&sz=w1000`;
-            }
-
-            const shortRegex = /https:\/\/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/;
-            const matchShort = url.match(shortRegex);
-            if (matchShort && matchShort[1]) {
-                return `https://drive.google.com/thumbnail?id=${matchShort[1]}&sz=w1000`;
+            for (let pattern of patterns) {
+                const match = url.match(pattern);
+                if (match && match[1]) {
+                    // שימוש בפורמט lh3.googleusercontent המהיר והחסין ביותר לעבודה חיצונית!
+                    return `https://lh3.googleusercontent.com/d/${match[1]}`;
+                }
             }
 
             return url;
@@ -520,30 +596,25 @@
             if (!input) return DEFAULT_TSV_URL;
             input = input.trim();
 
-            // אם זה כבר קישור TSV/CSV תקין - נשתמש בו כמו שהוא
             if (/output=(tsv|csv)/.test(input)) {
                 return input;
             }
 
-            // אם זה קישור pub אבל בלי output=tsv, נוסיף את הפרמטר
             if (/\/pub\b/.test(input)) {
                 return input.includes('?') ? `${input}&output=tsv` : `${input}?output=tsv`;
             }
 
-            // נסיון אחרון - אם הודבק מזהה גיליון רגיל בלבד
             return input;
         }
 
         // פירוק טקסט TSV גולמי למערך שורות/תאים
         function parseTsv(text) {
             let lines = text.replace(/\r/g, '').split('\n');
-            // מסירים רק שורה ריקה אחרונה שנובעת מ-newline בסוף הקובץ, כדי לשמר התאמה למספרי השורות בגיליון
             while (lines.length && lines[lines.length - 1] === '') lines.pop();
-            // השורה הראשונה היא כותרות העמודות - מדלגים עליה
             return lines.slice(1).map(line => line.split('\t'));
         }
 
-        // --- משיכת הנתונים ישירות מקישור הפרסום (CORS פתוח מצד גוגל) ---
+        // משיכת הנתונים ישירות מקישור הפרסום (CORS פתוח מצד גוגל)
         async function fetchTsvData(tsvUrl) {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -586,7 +657,6 @@
             document.getElementById('current-sheet-id-label').textContent = "מחובר לקישור TSV";
 
             try {
-                // קריאה ישירה לקובץ ה-TSV המפורסם (CORS פתוח מצד גוגל)
                 const rows = await fetchTsvData(tsvUrl);
                 const freshData = [];
 
@@ -594,7 +664,6 @@
                     const sheetRow = idx + 2; // שורה 1 היא כותרת, המערך מתחיל מ-0
                     if (!cells || cells.length === 0) return;
 
-                    // פונקציית עזר לחילוץ ערכים בטוח מתאי TSV
                     const getVal = (index) => (cells[index] !== undefined ? cells[index].trim() : '');
 
                     const cat = getVal(0);
@@ -602,7 +671,7 @@
                     const qty = getVal(2) || '-';
                     const rawImg = getVal(3);
 
-                    if (!name) return; // דילוג על שורות ריקות בטבלה
+                    if (!name) return; 
 
                     freshData.push({
                         id: sheetRow,
@@ -618,7 +687,7 @@
                 inventoryData = freshData;
                 
                 indicatorDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
-                indicatorText.textContent = "מחובר ל-Google Sheets (סנכרון חסין פעיל!)";
+                indicatorText.textContent = "מחובר ל-Google Sheets בזמן אמת!";
                 showToast("הנתונים סונכרנו בהצלחה מהענן!");
 
             } catch (error) {
@@ -671,13 +740,18 @@
                 
                 const hasImage = item.image !== '';
                 const imageColContent = hasImage 
-                    ? `<div class="flex justify-center"><img src="${item.image}" alt="${item.name}" class="h-10 w-16 object-cover rounded-lg border border-slate-700 shadow-md hover:scale-110 transition cursor-zoom-in" onclick="openZoomModal('${item.image}', '${item.name}', '${item.quantity}')" onerror="this.src='https://placehold.co/100x60/1e293b/94a3b8?text=Error'"></div>` 
+                    ? `<div class="flex justify-center">
+                            <img src="${item.image}" alt="${item.name}" 
+                                 class="h-10 w-16 object-cover rounded-lg border border-slate-700 shadow-md hover:scale-110 transition cursor-zoom-in" 
+                                 onclick="openZoomModal('${item.image}', '${item.name}', '${item.quantity}')" 
+                                 onerror="handleImageLoadError(this)">
+                       </div>` 
                     : `<span class="text-slate-600 italic">אין תמונה</span>`;
 
                 const qtyContent = isAdmin
                     ? `<div class="flex items-center justify-center gap-1">
                             <button onclick="updateQuantity(findItemById(${item.id}), Number(findItemById(${item.id}).quantity) - 1)" class="w-6 h-6 rounded-md bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-300 flex items-center justify-center transition"><i class="fa-solid fa-minus text-[10px]"></i></button>
-                            <input type="number" value="${item.quantity}" onchange="updateQuantity(findItemById(${item.id}), this.value)" class="w-14 text-center bg-slate-950 border border-slate-700 rounded-md py-1 text-emerald-400 font-bold text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                            <input type="text" value="${item.quantity}" onchange="updateQuantity(findItemById(${item.id}), this.value)" class="w-14 text-center bg-slate-950 border border-slate-700 rounded-md py-1 text-emerald-400 font-bold text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500">
                             <button onclick="updateQuantity(findItemById(${item.id}), Number(findItemById(${item.id}).quantity) + 1)" class="w-6 h-6 rounded-md bg-slate-800 hover:bg-emerald-500/20 hover:text-emerald-400 text-slate-300 flex items-center justify-center transition"><i class="fa-solid fa-plus text-[10px]"></i></button>
                        </div>`
                     : `${item.quantity}`;
@@ -721,14 +795,14 @@
                 const qtyContent = isAdmin
                     ? `<div class="flex items-center gap-1" onclick="event.stopPropagation()">
                             <button onclick="updateQuantity(findItemById(${item.id}), Number(findItemById(${item.id}).quantity) - 1)" class="w-6 h-6 rounded-md bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-300 flex items-center justify-center transition"><i class="fa-solid fa-minus text-[10px]"></i></button>
-                            <input type="number" value="${item.quantity}" onchange="updateQuantity(findItemById(${item.id}), this.value)" class="w-14 text-center bg-slate-950 border border-slate-700 rounded-md py-1 text-emerald-400 font-bold text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                            <input type="text" value="${item.quantity}" onchange="updateQuantity(findItemById(${item.id}), this.value)" class="w-14 text-center bg-slate-950 border border-slate-700 rounded-md py-1 text-emerald-400 font-bold text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500">
                             <button onclick="updateQuantity(findItemById(${item.id}), Number(findItemById(${item.id}).quantity) + 1)" class="w-6 h-6 rounded-md bg-slate-800 hover:bg-emerald-500/20 hover:text-emerald-400 text-slate-300 flex items-center justify-center transition"><i class="fa-solid fa-plus text-[10px]"></i></button>
                        </div>`
                     : `<span class="font-black text-emerald-400 text-sm bg-emerald-500/10 px-2.5 py-1 rounded-lg">${item.quantity}</span>`;
 
                 card.innerHTML = `
                     <div class="h-40 w-full bg-slate-950 flex items-center justify-center overflow-hidden border-b border-slate-800 relative">
-                        <img src="${imageSrc}" alt="${item.name}" class="h-full w-full object-cover transition-transform duration-300 hover:scale-105" onerror="this.src='https://placehold.co/300x200/0f172a/e2e8f0?text=Error'">
+                        <img src="${imageSrc}" alt="${item.name}" class="h-full w-full object-cover transition-transform duration-300 hover:scale-105" onerror="handleImageLoadError(this)">
                         <span class="absolute top-3 right-3 bg-slate-950/80 backdrop-blur text-[10px] text-slate-400 px-2 py-0.5 rounded-md font-mono">שורה ${item.id}</span>
                     </div>
                     <div class="p-4 flex-1 flex flex-col justify-between">
@@ -744,6 +818,13 @@
                 `;
                 container.appendChild(card);
             });
+        }
+
+        // פונקציית טיפול בשגיאות טעינת תמונה עם פלייסהולדר יפה ואזהרת שיתוף
+        function handleImageLoadError(imgEl) {
+            imgEl.onerror = null; // מניעת לולאה אינסופית
+            imgEl.src = "https://placehold.co/300x200/1e293b/ef4444?text=🔒+Check+Drive+Permissions";
+            imgEl.title = "הטעינה נכשלה. ודא שהקובץ בדרייב מוגדר כציבורי לכל מי שיש לו קישור!";
         }
 
         // עיצוב תגיות הקטגוריה
@@ -871,7 +952,6 @@
             }
 
             currentSheetId = newIdInput;
-
             localStorage.setItem(CONFIG_KEY_ID, newIdInput);
 
             toggleSetupModal();
@@ -919,7 +999,7 @@
                 sessionStorage.setItem('mhasan_is_admin', 'true');
                 toggleAdminLoginModal();
                 updateAdminUI();
-                showToast("מצב עריכה הופעל - ניתן לעדכן כמויות בלייב!");
+                showToast("מצב עריכה הופעל - ניתן לעדכן כמויות ולהעלות פריטים בלייב!");
             } else {
                 showToast("סיסמה שגויה", true);
             }
@@ -935,13 +1015,128 @@
         function updateAdminUI() {
             document.getElementById('admin-login-btn').classList.toggle('hidden', isAdmin);
             document.getElementById('admin-logout-btn').classList.toggle('hidden', !isAdmin);
-            filterData(); // רינדור מחדש כדי להציג/להסתיר פקדי עריכה
+            document.getElementById('admin-add-item-btn').classList.toggle('hidden', !isAdmin);
+            filterData(); 
+        }
+
+        // --- הוספת פריט חדש (מודאל) ---
+        function toggleAddItemModal() {
+            document.getElementById('add-item-modal').classList.toggle('hidden');
+            // איפוס שדות המודאל
+            document.getElementById('newItemName').value = '';
+            document.getElementById('newItemQty').value = '';
+            document.getElementById('newItemImageUrl').value = '';
+            document.getElementById('newItemFile').value = '';
+            document.getElementById('file-upload-label').textContent = 'לחץ לבחירת תמונה מהגלריה';
+            selectedImageBase64 = null;
+            selectedImageName = null;
+        }
+
+        function switchImageSource(source) {
+            currentImageSource = source;
+            const uploadTab = document.getElementById('img-src-upload-btn');
+            const linkTab = document.getElementById('img-src-link-btn');
+            const uploadDiv = document.getElementById('image-source-upload');
+            const linkDiv = document.getElementById('image-source-link');
+
+            if (source === 'upload') {
+                uploadTab.className = "w-1/2 py-1.5 rounded-md text-[10px] font-bold bg-slate-800 text-white transition-all";
+                linkTab.className = "w-1/2 py-1.5 rounded-md text-[10px] font-bold text-slate-400 hover:text-white transition-all";
+                uploadDiv.classList.remove('hidden');
+                linkDiv.classList.add('hidden');
+            } else {
+                linkTab.className = "w-1/2 py-1.5 rounded-md text-[10px] font-bold bg-slate-800 text-white transition-all";
+                uploadTab.className = "w-1/2 py-1.5 rounded-md text-[10px] font-bold text-slate-400 hover:text-white transition-all";
+                linkDiv.classList.remove('hidden');
+                uploadDiv.classList.add('hidden');
+            }
+        }
+
+        // קריאת הקובץ והפיכתו ל-Base64 כדי שנוכל לשלוח אותו ל-Apps Script
+        function handleFileSelected(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                selectedImageName = file.name;
+                document.getElementById('file-upload-label').textContent = `נבחר קובץ: ${file.name}`;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    selectedImageBase64 = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // שליחת הפריט החדש אל ה-Web App של גוגל שיטס
+        async function submitNewItem() {
+            const cat = document.getElementById('newItemCategory').value;
+            const name = document.getElementById('newItemName').value.trim();
+            const qty = document.getElementById('newItemQty').value.trim();
+            const linkUrl = document.getElementById('newItemImageUrl').value.trim();
+
+            if (!name || !qty) {
+                showToast("חובה להזין שם פריט וכמות!", true);
+                return;
+            }
+
+            if (!scriptUrl) {
+                showToast("לא הוגדרה כתובת Web App בהגדרות!", true);
+                return;
+            }
+
+            const submitBtn = document.getElementById('add-item-submit-btn');
+            const originalBtnHtml = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> מעלה תמונה ומוסיף פריט...`;
+
+            try {
+                // בניית הבקשה
+                const payload = {
+                    secret: adminPassword,
+                    action: 'addItem',
+                    category: cat,
+                    name: name,
+                    quantity: qty
+                };
+
+                // הוספת התמונה לבקשה
+                if (currentImageSource === 'upload' && selectedImageBase64) {
+                    payload.imageFile = selectedImageBase64;
+                    payload.imageName = selectedImageName;
+                } else if (currentImageSource === 'link' && linkUrl) {
+                    payload.imageUrl = linkUrl;
+                }
+
+                const res = await fetch(scriptUrl, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await res.json();
+
+                if (!res.ok || result.status !== 'ok') {
+                    throw new Error(result.message || 'שגיאה בשמירת הפריט');
+                }
+
+                showToast(`הפריט "${name}" נוסף בהצלחה למלאי!`);
+                toggleAddItemModal();
+                
+                // משיכת נתונים מחדש כדי להציג את הפריט החדש מיד
+                fetchLiveSheetData();
+
+            } catch (err) {
+                console.error(err);
+                showToast(`ההעלאה נכשלה: ${err.message}`, true);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnHtml;
+            }
         }
 
         // עדכון כמות פריט בלייב מול הגיליון (דרך Apps Script Web App)
         async function updateQuantity(item, newQty) {
             newQty = String(newQty).trim();
-            if (newQty === '' || isNaN(Number(newQty)) || Number(newQty) < 0) {
+            if (newQty === '') {
                 showToast("יש להזין כמות תקינה", true);
                 renderCurrentView();
                 return;
@@ -961,6 +1156,7 @@
                     method: 'POST',
                     body: JSON.stringify({
                         secret: adminPassword,
+                        action: 'updateQuantity',
                         row: item.id,
                         quantity: newQty
                     })
