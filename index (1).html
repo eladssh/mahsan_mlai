@@ -427,19 +427,19 @@
             const standardRegex = /https:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/;
             const match = url.match(standardRegex);
             if (match && match[1]) {
-                return `https://lh3.googleusercontent.com/d/${match[1]}`;
+                return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
             }
 
             const idRegex = /[?&]id=([a-zA-Z0-9_-]+)/;
             const matchId = url.match(idRegex);
             if (matchId && matchId[1]) {
-                return `https://lh3.googleusercontent.com/d/${matchId[1]}`;
+                return `https://drive.google.com/thumbnail?id=${matchId[1]}&sz=w1000`;
             }
 
             const shortRegex = /https:\/\/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/;
             const matchShort = url.match(shortRegex);
             if (matchShort && matchShort[1]) {
-                return `https://lh3.googleusercontent.com/d/${matchShort[1]}`;
+                return `https://drive.google.com/thumbnail?id=${matchShort[1]}&sz=w1000`;
             }
 
             return url;
