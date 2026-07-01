@@ -4,13 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>מערכת ניהול מלאי חיה - מחסן ציוד</title>
-    <!-- Tailwind CSS לעיצוב מודרני -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- פונט רוביק בעברית -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
-    <!-- אייקונים ידידותיים -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -18,10 +15,17 @@
             font-family: 'Rubik', sans-serif;
         }
     </style>
+
+    <script>
+        function handleImageLoadError(imgEl) {
+            imgEl.onerror = null;
+            imgEl.src = "https://placehold.co/300x200/1e293b/ef4444?text=%F0%9F%94%92+Check+Drive+Permissions";
+            imgEl.title = "הטעינה נכשלה. ודא שהקובץ בדרייב מוגדר כציבורי לכל מי שיש לו קישור!";
+        }
+    </script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased">
 
-    <!-- שורת סטטוס עליונה -->
     <div class="bg-slate-900 border-b border-slate-800 text-xs py-2.5 px-4 sm:px-6">
         <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
             <div class="flex items-center gap-2">
@@ -37,78 +41,63 @@
         </div>
     </div>
 
-    <!-- כותרת ראשית -->
     <header class="bg-slate-900/60 border-b border-slate-800 py-5 px-4 sm:px-6 sticky top-0 z-40 backdrop-blur-md">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-            <!-- מיתוג המחסן -->
             <div class="flex items-center gap-3">
                 <div class="bg-emerald-500 p-2.5 rounded-xl text-slate-950 shadow-lg shadow-emerald-500/20">
                     <i class="fa-solid fa-warehouse text-xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-black text-white tracking-tight">מלאי מחסן בזמן אמת</h1>
+                     <h1 class="text-xl font-black text-white tracking-tight">מלאי מחסן בזמן אמת</h1>
                     <p class="text-slate-400 text-xs mt-0.5">סנכרון חסין לגוגל שיטס והעלאת תמונות מהשטח</p>
                 </div>
             </div>
             
-            <!-- כפתורי פעולה מהירה -->
             <div class="flex flex-wrap items-center gap-2">
-                <!-- כפתור הוספת פריט - מופיע רק למנהל מחובר -->
                 <button id="admin-add-item-btn" onclick="toggleAddItemModal()" class="hidden bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition-all text-slate-950 font-bold px-4 py-2 rounded-xl flex items-center gap-2 text-xs shadow-md shadow-emerald-500/10">
-                    <i class="fa-solid fa-circle-plus"></i>
-                    הוסף פריט חדש
+                    <i class="fa-solid fa-circle-plus"></i> הוסף פריט חדש
                 </button>
 
                 <button id="admin-login-btn" onclick="toggleAdminLoginModal()" class="bg-slate-800 hover:bg-slate-700 active:scale-95 transition-all text-white font-medium px-4 py-2 rounded-xl flex items-center gap-2 text-xs border border-slate-700">
-                    <i class="fa-solid fa-user-shield"></i>
-                    כניסת מנהל
+                    <i class="fa-solid fa-user-shield"></i> כניסת מנהל
                 </button>
                 <button id="admin-logout-btn" onclick="adminLogout()" class="hidden bg-rose-500/10 hover:bg-rose-500/20 active:scale-95 transition-all text-rose-400 font-medium px-4 py-2 rounded-xl flex items-center gap-2 text-xs border border-rose-500/30">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                    יציאה ממצב עריכה
+                    <i class="fa-solid fa-right-from-bracket"></i> יציאה ממצב עריכה
                 </button>
                 <button onclick="fetchLiveSheetData()" class="bg-slate-800 hover:bg-slate-700 active:scale-95 transition-all text-white font-medium px-4 py-2 rounded-xl flex items-center gap-2 text-xs border border-slate-700">
-                    <i id="sync-icon" class="fa-solid fa-rotate"></i>
-                    סנכרן מהשיטס
+                    <i id="sync-icon" class="fa-solid fa-rotate"></i> סנכרן מהשיטס
                 </button>
                 <button onclick="copyToClipboardFormatted()" class="bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition-all text-slate-950 font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 text-xs shadow-md">
-                    <i class="fa-solid fa-copy"></i>
-                    העתק הכל לאקסל
+                    <i class="fa-solid fa-copy"></i> העתק הכל לאקסל
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- אזור התוכן המרכזי -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-4 gap-6">
         
-        <!-- סרגל צדי - סינון ומידע -->
         <div class="lg:col-span-1 space-y-6">
             
-            <!-- חיפוש ונתונים -->
             <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl">
                 <h3 class="font-bold text-sm mb-4 text-white flex items-center gap-2">
-                    <i class="fa-solid fa-filter text-emerald-400"></i>
-                    חיפוש וסטטיסטיקה
+                    <i class="fa-solid fa-filter text-emerald-400"></i> חיפוש וסטטיסטיקה
                 </h3>
                 
-                <!-- תיבת חיפוש מהיר -->
                 <div class="relative mb-4">
                     <span class="absolute right-3 top-3.5 text-slate-500">
-                        <i class="fa-solid fa-magnifying-glass"></i>
+                         <i class="fa-solid fa-magnifying-glass"></i>
                     </span>
                     <input type="text" id="searchInput" oninput="filterData()" placeholder="חפש פריט, מכולה..." 
                            class="w-full pl-3 pr-10 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition">
                 </div>
 
-                <!-- סטטיסטיקות מלאי -->
                 <div class="space-y-2.5 text-xs">
                     <div class="p-3 bg-slate-950 rounded-xl border border-slate-800/80 flex items-center justify-between">
-                        <span class="text-slate-400">סה"כ פריטים במלאי:</span>
+                       <span class="text-slate-400">סה"כ פריטים במלאי:</span>
                         <span id="totalItems" class="font-bold text-white text-sm">0</span>
                     </div>
                     <div class="p-3 bg-slate-950 rounded-xl border border-slate-800/80 flex items-center justify-between">
-                        <span class="text-slate-400">פריטים מסוננים:</span>
+                         <span class="text-slate-400">פריטים מסוננים:</span>
                         <span id="filteredItems" class="font-bold text-emerald-400 text-sm">0</span>
                     </div>
                     <div class="p-3 bg-slate-950 rounded-xl border border-slate-800/80 flex items-center justify-between">
@@ -118,16 +107,12 @@
                 </div>
             </div>
 
-            <!-- מדריך הצגת תמונות -->
             <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl">
                 <h3 class="font-bold text-sm mb-3 text-white flex items-center gap-1.5">
-                    <i class="fa-solid fa-circle-question text-blue-400"></i>
-                    איך להציג תמונות בממשק?
+                    <i class="fa-solid fa-circle-question text-blue-400"></i> איך להציג תמונות בממשק?
                 </h3>
                 <div class="text-xs text-slate-400 space-y-3 leading-relaxed">
-                    <p>
-                        כדי להציג תמונות מ-Google Drive ישירות בלוח הבקרה הזה:
-                    </p>
+                    <p>כדי להציג תמונות מ-Google Drive ישירות בלוח הבקרה הזה:</p>
                     <ol class="space-y-2 list-decimal list-inside">
                         <li>הכנס ל-<strong>Google Drive</strong> שלך ומצא את תיקיית התמונות.</li>
                         <li>לחץ קליק ימני ➔ <strong>שתף (Share)</strong>.</li>
@@ -142,31 +127,17 @@
 
         </div>
 
-        <!-- אזור הצגת הפריטים והקטלוג -->
         <div class="lg:col-span-3 space-y-4">
             
-            <!-- סינון לפי קטגוריות וכפתור תצוגה -->
             <div class="bg-slate-900 border border-slate-800 p-3 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
-                <!-- טאבים לסינון מהיר -->
                 <div class="flex flex-wrap gap-1 w-full sm:w-auto">
-                    <button onclick="selectCategory('all')" id="tab-all" class="tab-btn px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-emerald-500 text-slate-950 shadow-md transition-all">
-                        הכל
-                    </button>
-                    <button onclick="selectCategory('תשורות')" id="tab-תשורות" class="tab-btn px-3.5 py-1.5 text-xs font-semibold rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all">
-                        תשורות
-                    </button>
-                    <button onclick="selectCategory('חשמל')" id="tab-חשמל" class="tab-btn px-3.5 py-1.5 text-xs font-semibold rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all">
-                        חשמל
-                    </button>
-                    <button onclick="selectCategory('ספר')" id="tab-ספר" class="tab-btn px-3.5 py-1.5 text-xs font-semibold rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all">
-                        ספרים
-                    </button>
-                    <button onclick="selectCategory('ערכת נהג')" id="tab-ערכת נהג" class="tab-btn px-3.5 py-1.5 text-xs font-semibold rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all">
-                        ערכת נהג
-                    </button>
+                    <button onclick="selectCategory('all')" id="tab-all" class="tab-btn px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-emerald-500 text-slate-950 shadow-md transition-all">הכל</button>
+                    <button onclick="selectCategory('תשורות')" id="tab-תשורות" class="tab-btn px-3.5 py-1.5 text-xs font-semibold rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all">תשורות</button>
+                    <button onclick="selectCategory('חשמל')" id="tab-חשמל" class="tab-btn px-3.5 py-1.5 text-xs font-semibold rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all">חשמל</button>
+                    <button onclick="selectCategory('ספר')" id="tab-ספר" class="tab-btn px-3.5 py-1.5 text-xs font-semibold rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all">ספרים</button>
+                    <button onclick="selectCategory('ערכת נהג')" id="tab-ערכת נהג" class="tab-btn px-3.5 py-1.5 text-xs font-semibold rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all">ערכת נהג</button>
                 </div>
 
-                <!-- שינוי סוג תצוגה (רשימה / גלריה) -->
                 <div class="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center gap-1 shrink-0">
                     <button onclick="switchView('table')" id="view-btn-table" class="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-slate-800 text-white transition-all flex items-center gap-1.5">
                         <i class="fa-solid fa-list"></i> טבלה
@@ -177,13 +148,11 @@
                 </div>
             </div>
 
-            <!-- אנימציית טעינה -->
             <div id="table-loader" class="py-24 text-center">
                 <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-emerald-500 border-t-transparent mb-3"></div>
                 <p class="text-slate-400 text-xs">מבצע סנכרון חסין אבטחה לגוגל שיטס...</p>
             </div>
 
-            <!-- תצוגת טבלה רגילה -->
             <div id="table-view-container" class="hidden bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
                 <div class="overflow-x-auto max-h-[600px]">
                     <table class="w-full text-right border-collapse text-xs">
@@ -194,32 +163,28 @@
                                 <th class="py-3 px-4 text-right">שם פריט</th>
                                 <th class="py-3 px-4 w-24 text-center">כמות</th>
                                 <th class="py-3 px-4 w-32 text-center">תמונה במחסן</th>
+                                <th class="py-3 px-4 w-28 text-center admin-action-col hidden">פעולות</th>
                             </tr>
                         </thead>
                         <tbody id="inventoryTableBody" class="divide-y divide-slate-800/50 text-right">
-                            <!-- הנתונים יוזרקו לכאן דינמית -->
-                        </tbody>
+                            </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- תצוגת גלריית תמונות (Grid View) -->
             <div id="grid-view-container" class="hidden grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                <!-- הכרטיסיות יוזרקו לכאן דינמית -->
-            </div>
+                </div>
 
         </div>
     </main>
 
-    <!-- מודל הגדרות חיבור לשיטס אחר -->
     <div id="setup-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-md shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <button onclick="toggleSetupModal()" class="absolute left-4 top-4 text-slate-500 hover:text-slate-200">
                 <i class="fa-solid fa-xmark text-base"></i>
             </button>
             <h3 class="font-bold text-base text-white mb-2 flex items-center gap-2">
-                <i class="fa-solid fa-gear text-emerald-400"></i>
-                הגדרות חיבור חסינות (בקיעת CORS)
+                <i class="fa-solid fa-gear text-emerald-400"></i> הגדרות חיבור חסינות (בקיעת CORS)
             </h3>
             <p class="text-[11px] text-slate-400 leading-relaxed mb-4">
                 הדבק כאן את קישור ה"פרסום לאינטרנט" (Publish to web) של הגיליון שלך - הקישור שמסתיים ב-output=tsv או output=csv:
@@ -246,11 +211,10 @@
             <hr class="border-slate-800 my-5">
 
             <h3 class="font-bold text-base text-white mb-2 flex items-center gap-2">
-                <i class="fa-solid fa-user-shield text-rose-400"></i>
-                הגדרות עריכה חיה (מנהל בלבד)
+                <i class="fa-solid fa-user-shield text-rose-400"></i> הגדרות עריכה חיה (מנהל בלבד)
             </h3>
             <p class="text-[11px] text-slate-400 leading-relaxed mb-4">
-                כדי לאפשר עדכון כמויות והוספת פריטים בלייב, הדבק כאן את כתובת ה-Apps Script Web App שקיבלת לאחר הפריסה בגוגל:
+                כדי לאפשר עדכון כמויות, מחיקה והעלאת תמונות בלייב, הדבק כאן את כתובת ה-Apps Script Web App שקיבלת לאחר הפריסה בגוגל:
             </p>
 
             <div class="space-y-4 text-xs">
@@ -269,15 +233,13 @@
         </div>
     </div>
 
-    <!-- מודל כניסת מנהל -->
     <div id="admin-login-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-sm shadow-2xl relative">
             <button onclick="toggleAdminLoginModal()" class="absolute left-4 top-4 text-slate-500 hover:text-slate-200">
                 <i class="fa-solid fa-xmark text-base"></i>
             </button>
             <h3 class="font-bold text-base text-white mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-user-shield text-emerald-400"></i>
-                כניסת מנהל
+                <i class="fa-solid fa-user-shield text-emerald-400"></i> כניסת מנהל
             </h3>
             <div class="space-y-3 text-xs">
                 <input type="password" id="adminLoginPasswordField" placeholder="סיסמת מנהל"
@@ -290,19 +252,16 @@
         </div>
     </div>
 
-    <!-- מודל הוספת פריט חדש (למנהל בלבד) -->
     <div id="add-item-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-md shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <button onclick="toggleAddItemModal()" class="absolute left-4 top-4 text-slate-500 hover:text-slate-200">
                 <i class="fa-solid fa-xmark text-base"></i>
             </button>
             <h3 class="font-bold text-base text-white mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-circle-plus text-emerald-400"></i>
-                הוספת פריט חדש למלאי
+                <i class="fa-solid fa-circle-plus text-emerald-400"></i> הוספת פריט חדש למלאי
             </h3>
             
             <div class="space-y-4 text-xs">
-                <!-- קטגוריה -->
                 <div>
                     <label class="block font-bold text-slate-400 mb-1">מכולה/קטגוריה:</label>
                     <select id="newItemCategory" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
@@ -313,29 +272,24 @@
                     </select>
                 </div>
 
-                <!-- שם הפריט -->
                 <div>
                     <label class="block font-bold text-slate-400 mb-1">שם הפריט:</label>
                     <input type="text" id="newItemName" placeholder="הקלד שם פריט..." class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
 
-                <!-- כמות -->
                 <div>
                     <label class="block font-bold text-slate-400 mb-1">כמות ראשונית:</label>
                     <input type="text" id="newItemQty" placeholder="לדוגמה: 45 או 3 קרטונים..." class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
 
-                <!-- תמונה (קישור או העלאת קובץ) -->
                 <div>
                     <label class="block font-bold text-slate-400 mb-1">בחירת תמונה לפריט:</label>
                     
-                    <!-- טאבים לבחירת מקור תמונה -->
                     <div class="flex gap-2 mb-2 bg-slate-950 p-1 rounded-lg border border-slate-800">
                         <button onclick="switchImageSource('upload')" id="img-src-upload-btn" class="w-1/2 py-1.5 rounded-md text-[10px] font-bold bg-slate-800 text-white transition-all">העלאת קובץ</button>
                         <button onclick="switchImageSource('link')" id="img-src-link-btn" class="w-1/2 py-1.5 rounded-md text-[10px] font-bold text-slate-400 hover:text-white transition-all">הדבקת קישור</button>
                     </div>
 
-                    <!-- העלאת קובץ מהמכשיר -->
                     <div id="image-source-upload" class="space-y-2">
                         <div class="flex items-center justify-center w-full">
                             <label class="flex flex-col items-center justify-center w-full h-24 border-2 border-slate-800 border-dashed rounded-lg cursor-pointer bg-slate-950 hover:bg-slate-800/30 transition">
@@ -348,7 +302,6 @@
                         </div>
                     </div>
 
-                    <!-- קישור קיים מגוגל דרייב -->
                     <div id="image-source-link" class="hidden">
                         <input type="text" id="newItemImageUrl" placeholder="הדבק קישור שיתוף של גוגל דרייב..." class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
                     </div>
@@ -356,23 +309,79 @@
 
                 <div class="pt-2">
                     <button id="add-item-submit-btn" onclick="submitNewItem()" class="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition text-slate-950 font-bold py-3 rounded-xl text-xs shadow-md shadow-emerald-500/10 flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-save"></i>
-                        שמור פריט והעלה למלאי
+                        <i class="fa-solid fa-save"></i> שמור פריט והעלה למלאי
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- מודל הדרכה לתיקון קישורי תמונה -->
+    <div id="edit-image-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-md shadow-2xl relative">
+            <button onclick="toggleEditImageModal()" class="absolute left-4 top-4 text-slate-500 hover:text-slate-200">
+                <i class="fa-solid fa-xmark text-base"></i>
+            </button>
+            <h3 class="font-bold text-base text-white mb-2 flex items-center gap-2">
+                <i class="fa-solid fa-image text-emerald-400"></i> עדכון תמונה לפריט
+            </h3>
+            <p id="editImageItemName" class="text-xs text-slate-400 mb-4 font-semibold"></p>
+            
+            <div class="space-y-4 text-xs">
+                <div class="flex gap-2 bg-slate-950 p-1 rounded-lg border border-slate-800">
+                    <button onclick="switchEditImageSource('upload')" id="edit-img-src-upload-btn" class="w-1/2 py-1.5 rounded-md text-[10px] font-bold bg-slate-800 text-white transition-all">העלאת קובץ</button>
+                    <button onclick="switchEditImageSource('link')" id="edit-img-src-link-btn" class="w-1/2 py-1.5 rounded-md text-[10px] font-bold text-slate-400 hover:text-white transition-all">הדבקת קישור</button>
+                </div>
+
+                <div id="edit-image-source-upload" class="space-y-2">
+                    <div class="flex items-center justify-center w-full">
+                        <label class="flex flex-col items-center justify-center w-full h-24 border-2 border-slate-800 border-dashed rounded-lg cursor-pointer bg-slate-950 hover:bg-slate-800/30 transition">
+                            <div class="flex flex-col items-center justify-center pt-2 pb-2">
+                                <i class="fa-solid fa-cloud-arrow-up text-slate-500 text-lg mb-1"></i>
+                                <p class="text-[10px] text-slate-400 font-semibold" id="edit-file-upload-label">לחץ לבחירת תמונה מהגלריה</p>
+                            </div>
+                            <input type="file" id="editItemFile" accept="image/*" class="hidden" onchange="handleEditFileSelected(this)">
+                        </label>
+                    </div>
+                </div>
+
+                <div id="edit-image-source-link" class="hidden">
+                    <input type="text" id="editItemImageUrl" placeholder="הדבק קישור שיתוף של גוגל דרייב..." class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+
+                <div class="pt-2">
+                    <button id="edit-image-submit-btn" onclick="submitEditImage()" class="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition text-slate-950 font-bold py-3 rounded-xl text-xs shadow-md shadow-emerald-500/10 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> העלה ועדכן תמונה בטבלה
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="delete-confirm-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-sm shadow-2xl relative text-right">
+            <h3 class="font-bold text-base text-white mb-2 flex items-center gap-2 text-rose-500">
+                <i class="fa-solid fa-triangle-exclamation"></i> אישור מחיקת פריט
+            </h3>
+            <p id="deleteConfirmMessage" class="text-xs text-slate-300 leading-relaxed mb-6"></p>
+            
+            <div class="flex gap-2 text-xs">
+                <button onclick="executeDeleteRow()" class="w-1/2 bg-rose-600 hover:bg-rose-700 transition text-white font-bold py-2.5 rounded-lg flex items-center justify-center gap-1.5 shadow-md shadow-rose-600/10">
+                    <i class="fa-solid fa-trash-can"></i> כן, מחק לצמיתות
+                </button>
+                <button onclick="toggleDeleteConfirmModal()" class="w-1/2 bg-slate-800 hover:bg-slate-700 transition text-slate-300 font-bold py-2.5 rounded-lg">
+                    ביטול
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div id="image-guide-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-md shadow-2xl relative">
             <button onclick="toggleImageGuideModal()" class="absolute left-4 top-4 text-slate-500 hover:text-slate-200">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
             <h3 class="font-bold text-base text-white mb-3 flex items-center gap-2 text-right">
-                <i class="fa-solid fa-circle-exclamation text-rose-500"></i>
-                שם קובץ במקום קישור: איך לתקן?
+                <i class="fa-solid fa-circle-exclamation text-rose-500"></i> שם קובץ במקום קישור: איך לתקן?
             </h3>
             <div class="text-xs text-slate-400 space-y-3 leading-relaxed text-right">
                 <p>
@@ -395,7 +404,6 @@
         </div>
     </div>
 
-    <!-- מודל זום להגדלת תמונה בלחיצה -->
     <div id="zoom-modal" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4" onclick="closeZoomModal()">
         <div class="relative max-w-3xl max-h-[85vh] flex flex-col items-center" onclick="event.stopPropagation()">
             <button onclick="closeZoomModal()" class="absolute -top-10 left-0 text-white hover:text-emerald-400 transition flex items-center gap-1 text-xs font-bold">
@@ -407,31 +415,38 @@
         </div>
     </div>
 
-    <!-- התראות קופצות מהירות -->
     <div id="toast" class="fixed bottom-6 left-6 bg-slate-900 text-white text-xs font-semibold py-3 px-5 rounded-xl shadow-2xl border border-slate-800 flex items-center gap-2 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none z-50">
         <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400"></i>
         <span id="toast-message">הועתק בהצלחה!</span>
     </div>
 
-    <!-- לוגיקת המערכת והסנכרון החי -->
     <script>
         const CONFIG_KEY_ID = "mhasan_sheet_id";
         const CONFIG_KEY_SCRIPT_URL = "mhasan_script_url";
         const ADMIN_PASSWORD_HASH = "8714441"; // סיסמת המנהל המשותפת והקשיחה שלכם!
 
         const DEFAULT_TSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTuQLVgP-0Wo-yN0sOv1vCN5DTpmiCaZn3eHlXQsVwldauvyU1sWwq2Vg9SWYwK8wYRVFyVUgos8u5U/pub?output=tsv";
-
         let currentSheetId = localStorage.getItem(CONFIG_KEY_ID) || DEFAULT_TSV_URL;
         let scriptUrl = localStorage.getItem(CONFIG_KEY_SCRIPT_URL) || "";
         let isAdmin = sessionStorage.getItem('mhasan_is_admin') === 'true';
-        
         let inventoryData = [];
         let selectedCategory = 'all';
         let currentViewMode = 'table';
+        
+        // משתני עזר להוספה/עריכת פריטים
         let currentImageSource = 'upload';
         let selectedImageBase64 = null;
         let selectedImageName = null;
 
+        // משתני עזר לעריכת תמונה של שורה קיימת
+        let currentEditImageSource = 'upload';
+        let selectedEditImageBase64 = null;
+        let selectedEditImageName = null;
+        let activeEditRowId = null;
+        
+        // משתני עזר למחיקת שורה
+        let activeDeleteRowId = null;
+        
         // נתוני גיבוי מקומיים למקרה של אופליין
         const localBackupData = [
             { id: 2, category: "תשורות", name: "תיק בד ממותג", quantity: "18", image: "" },
@@ -563,7 +578,7 @@
             { id: 128, category: "ערכת נהג", name: "תחתון בוקסר", quantity: "176", image: "" },
             { id: 129, category: "ערכת נהג", name: "לוח מחיק זכוכית לבן 1500X1200", quantity: "4", image: "" },
             { id: 130, category: "ערכת נהג", name: "בקבוק מים קשיח כחול", quantity: "16", image: "" },
-            { id: 131, category: "ערכת נהג", name: "בקבוק מים קשיح טורקיז", quantity: "19", image: "" },
+            { id: 131, category: "ערכת נהג", name: "בקבוק מים קשיח טורקיז", quantity: "19", image: "" },
             { id: 132, category: "ערכת נהג", name: "בקבוק מים נירוסטה פרחים", quantity: "27", image: "" },
             { id: 133, category: "ערכת נהג", name: "בקבוק מים נירוסטה אפור", quantity: "43", image: "" },
             { id: 134, category: "ערכת נהג", name: "חולצה טרמית", quantity: "50", image: "" },
@@ -591,12 +606,12 @@
             fetchLiveSheetData();
         });
 
-        // חילוץ ID ומזהי דרייב בצורה חסינה ויציבה
+        // חילוץ ID ומזהי דרייב בצורה חסינה ויציבה - מעודכן Thumbnail API
         function parseDriveImageUrl(url) {
             if (!url) return '';
             url = url.trim();
 
-            // תמיכה בנוסחת =IMAGE("https://...")
+            // תמיכה בנוסחת =IMAGE
             if (url.toUpperCase().startsWith('=IMAGE')) {
                 const formulaMatch = url.match(/["'](https?:\/\/[^"']+)["']/);
                 if (formulaMatch && formulaMatch[1]) {
@@ -604,7 +619,7 @@
                 }
             }
 
-            // בדיקה אם הוכנס שם קובץ פשוט של ווטסאפ (כמו WhatsApp Image...jpeg) במקום קישור
+            // בדיקה אם הוכנס שם קובץ פשוט של ווטסאפ במקום קישור
             if (!url.startsWith('http') && (url.includes('.') || url.length > 5)) {
                 return 'FILENAME_ERROR_TRIGGER:' + url;
             }
@@ -619,8 +634,8 @@
             for (let pattern of patterns) {
                 const match = url.match(pattern);
                 if (match && match[1] && !url.includes('spreadsheets')) {
-                    // שימוש בפורמט lh3 המהיר ביותר לעקיפת חסימות
-                    return `https://lh3.googleusercontent.com/d/${match[1]}`;
+                    // שימוש ב-Thumbnail API היציב של גוגל להצגת תמונות משותפות
+                    return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w800`;
                 }
             }
 
@@ -717,7 +732,6 @@
                         image: parseDriveImageUrl(rawImg)
                     });
                 });
-
                 if (freshData.length === 0) throw new Error("לא נמצאו נתונים בגיליון");
 
                 inventoryData = freshData;
@@ -725,15 +739,12 @@
                 indicatorDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
                 indicatorText.textContent = "מחובר ל-Google Sheets בזמן אמת!";
                 showToast("הנתונים סונכרנו בהצלחה מהענן!");
-
             } catch (error) {
                 console.warn("Using offline fallback data due to:", error);
-                
                 inventoryData = localBackupData.map(item => ({
                     ...item,
                     image: parseDriveImageUrl(item.image)
                 }));
-
                 indicatorDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse";
                 indicatorText.textContent = "מצב לא מקוון. מציג גיבוי מקומי.";
                 showToast("לא מצליח לגשת לגיליון. מוצגים נתוני הגיבוי.", true);
@@ -766,7 +777,7 @@
             if (data.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="5" class="py-16 text-center text-slate-500">
+                        <td colspan="6" class="py-16 text-center text-slate-500">
                             <i class="fa-solid fa-folder-open text-4xl mb-3 block"></i>
                             לא נמצאו פריטים העונים לסינון החיפוש
                         </td>
@@ -813,15 +824,39 @@
                        </div>`
                     : `${item.quantity}`;
 
+                // כפתורי עמודת פעולות למנהל
+                const actionButtons = isAdmin
+                    ? `<div class="flex items-center justify-center gap-2">
+                            <button onclick="openEditImageModal(${item.id}, '${item.name.replace(/'/g, "\\'")}')" title="עדכן תמונה" class="w-8 h-8 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center justify-center transition active:scale-95">
+                                <i class="fa-solid fa-camera"></i>
+                            </button>
+                            <button onclick="confirmDeleteRow(${item.id}, '${item.name.replace(/'/g, "\\'")}')" title="מחק פריט" class="w-8 h-8 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center transition active:scale-95">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                       </div>`
+                    : ``;
+
                 tr.innerHTML = `
                     <td class="py-3 px-4 text-center font-medium text-slate-500 text-xs">${item.id}</td>
                     <td class="py-3 px-4">${getCategoryBadge(item.category)}</td>
                     <td class="py-3 px-4 font-medium text-white text-right">${item.name}</td>
                     <td class="py-3 px-4 text-center font-bold text-emerald-400 text-sm">${qtyContent}</td>
                     <td class="py-3 px-4 text-center">${imageColContent}</td>
+                    <td class="py-3 px-4 text-center admin-action-col ${isAdmin ? '' : 'hidden'}">${actionButtons}</td>
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        // קבלת תג עזר לקטגוריות
+        function getCategoryBadge(category) {
+            let colors = "bg-slate-800 text-slate-300";
+            if(category === "תשורות") colors = "bg-purple-500/20 text-purple-400 border-purple-500/30";
+            if(category === "חשמל") colors = "bg-amber-500/20 text-amber-400 border-amber-500/30";
+            if(category === "ספר") colors = "bg-blue-500/20 text-blue-400 border-blue-500/30";
+            if(category === "ערכת נהג") colors = "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
+            
+            return `<span class="px-2.5 py-1 rounded-md text-[10px] font-bold border ${colors}">${category}</span>`;
         }
 
         // רינדור תצוגת גלריית תמונות
@@ -841,7 +876,7 @@
 
             data.forEach(item => {
                 const card = document.createElement('div');
-                card.className = "bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-slate-700 hover:shadow-xl transition-all flex flex-col cursor-pointer";
+                card.className = "bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-slate-700 hover:shadow-xl transition-all flex flex-col cursor-pointer relative";
                 
                 let isErrorFilename = false;
                 let imageSrc = "https://placehold.co/300x200/0f172a/475569?text=No+Image";
@@ -881,7 +916,20 @@
                        </div>`
                     : `<span class="font-black text-emerald-400 text-sm bg-emerald-500/10 px-2.5 py-1 rounded-lg">${item.quantity}</span>`;
 
+                // פאנל פעולות פינתי בגלריה רק למנהל
+                const adminOverlayMarkup = isAdmin
+                    ? `<div class="absolute top-2 left-2 flex gap-1.5 z-20" onclick="event.stopPropagation()">
+                            <button onclick="openEditImageModal(${item.id}, '${item.name.replace(/'/g, "\\'")}')" title="עדכן תמונה" class="w-7 h-7 rounded-lg bg-slate-950/80 hover:bg-blue-600 text-blue-400 hover:text-white transition flex items-center justify-center text-xs shadow-md border border-slate-800">
+                                <i class="fa-solid fa-camera"></i>
+                            </button>
+                            <button onclick="confirmDeleteRow(${item.id}, '${item.name.replace(/'/g, "\\'")}')" title="מחק פריט" class="w-7 h-7 rounded-lg bg-slate-950/80 hover:bg-rose-600 text-rose-500 hover:text-white transition flex items-center justify-center text-xs shadow-md border border-slate-800">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                       </div>`
+                    : ``;
+
                 card.innerHTML = `
+                    ${adminOverlayMarkup}
                     ${imageElMarkup}
                     <div class="p-4 flex-1 flex flex-col justify-between text-right">
                         <div>
@@ -896,24 +944,6 @@
                 `;
                 container.appendChild(card);
             });
-        }
-
-        // פונקציית טיפול בשגיאות טעינת תמונה
-        function handleImageLoadError(imgEl) {
-            imgEl.onerror = null; 
-            imgEl.src = "https://placehold.co/300x200/1e293b/ef4444?text=🔒+Check+Drive+Permissions";
-            imgEl.title = "הטעינה נכשלה. ודא שהקובץ בדרייב מוגדר כציבורי לכל מי שיש לו קישור!";
-        }
-
-        // עיצוב תגיות הקטגוריה
-        function getCategoryBadge(category) {
-            let colors = "bg-slate-800 text-slate-300";
-            if (category === "תשורות") colors = "bg-blue-500/10 text-blue-400 border border-blue-500/20";
-            else if (category === "חשמל") colors = "bg-amber-500/10 text-amber-400 border border-amber-500/20";
-            else if (category === "ספר") colors = "bg-purple-500/10 text-purple-400 border border-purple-500/20";
-            else if (category === "ערכת נהג") colors = "bg-rose-500/10 text-rose-400 border border-rose-500/20";
-            
-            return `<span class="px-2 py-0.5 text-[10px] font-bold rounded-md ${colors}">${category}</span>`;
         }
 
         // סינון לפי חיפוש
@@ -931,7 +961,6 @@
         // טאבים של קטגוריה
         function selectCategory(cat) {
             selectedCategory = cat;
-            
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.className = "tab-btn px-3.5 py-1.5 text-xs font-semibold rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all";
             });
@@ -946,12 +975,11 @@
         // בחירת סוג תצוגה
         function switchView(mode) {
             currentViewMode = mode;
-            
             const tableBtn = document.getElementById('view-btn-table');
             const gridBtn = document.getElementById('view-btn-grid');
             const tableContainer = document.getElementById('table-view-container');
             const gridContainer = document.getElementById('grid-view-container');
-
+            
             if (mode === 'table') {
                 tableBtn.className = "px-3 py-1.5 rounded-lg text-[11px] font-bold bg-slate-800 text-white transition-all flex items-center gap-1.5";
                 gridBtn.className = "px-3 py-1.5 rounded-lg text-[11px] font-bold text-slate-500 hover:text-slate-200 transition-all flex items-center gap-1.5";
@@ -990,14 +1018,12 @@
             inventoryData.forEach(item => {
                 clipboardText += `${item.category}\t${item.name}\t${item.quantity}\t${item.image}\n`;
             });
-
             const textarea = document.createElement("textarea");
             textarea.value = clipboardText;
             textarea.style.position = "fixed";
             textarea.style.opacity = "0";
             document.body.appendChild(textarea);
             textarea.select();
-            
             try {
                 const successful = document.execCommand("copy");
                 if (successful) {
@@ -1022,7 +1048,6 @@
 
         function saveSetupConfig() {
             const newIdInput = document.getElementById('sheetIdInput').value.trim();
-
             if (!newIdInput) {
                 showToast("חובה להזין קישור!", true);
                 return;
@@ -1045,7 +1070,6 @@
         // שמירת הגדרות עריכה חיה (Web App)
         function saveAdminConfig() {
             const newScriptUrl = document.getElementById('scriptUrlInput').value.trim();
-
             scriptUrl = newScriptUrl;
             localStorage.setItem(CONFIG_KEY_SCRIPT_URL, newScriptUrl);
 
@@ -1062,18 +1086,18 @@
 
         function attemptAdminLogin() {
             const entered = document.getElementById('adminLoginPasswordField').value;
-
             if (entered === ADMIN_PASSWORD_HASH) {
                 isAdmin = true;
                 sessionStorage.setItem('mhasan_is_admin', 'true');
                 toggleAdminLoginModal();
                 updateAdminUI();
-                showToast("מצב עריכה הופעל - ניתן לעדכן כמויות ולהוסיף פריטים!");
+                showToast("מצב עריכה הופעל - ניתן לעדכן כמויות, למחוק שורות ולהעלות תמונות!");
             } else {
                 showToast("סיסמה שגויה, נסה שוב", true);
             }
         }
 
+        // יציאה ממצב עריכה
         function adminLogout() {
             isAdmin = false;
             sessionStorage.removeItem('mhasan_is_admin');
@@ -1086,6 +1110,16 @@
             const loginBtn = document.getElementById('admin-login-btn');
             const logoutBtn = document.getElementById('admin-logout-btn');
 
+            // עדכון נראות כפתורי פעולות בטבלה
+            const actionCols = document.querySelectorAll('.admin-action-col');
+            actionCols.forEach(col => {
+                if (isAdmin) {
+                    col.classList.remove('hidden');
+                } else {
+                    col.classList.add('hidden');
+                }
+            });
+
             if (isAdmin) {
                 addBtn?.classList.remove('hidden');
                 logoutBtn?.classList.remove('hidden');
@@ -1095,7 +1129,7 @@
                 logoutBtn?.classList.add('hidden');
                 loginBtn?.classList.remove('hidden');
             }
-            filterData(); 
+            filterData();
         }
 
         // --- הוספת פריט חדש (מודאל) ---
@@ -1117,7 +1151,7 @@
             const linkTab = document.getElementById('img-src-link-btn');
             const uploadDiv = document.getElementById('image-source-upload');
             const linkDiv = document.getElementById('image-source-link');
-
+            
             if (source === 'upload') {
                 uploadTab.className = "w-1/2 py-1.5 rounded-md text-[10px] font-bold bg-slate-800 text-white transition-all";
                 linkTab.className = "w-1/2 py-1.5 rounded-md text-[10px] font-bold text-slate-400 hover:text-white transition-all";
@@ -1131,7 +1165,7 @@
             }
         }
 
-        // קריאת הקובץ והפיכתו ל-Base64
+        // קריאת הקובץ והפיכתו ל-Base64 בשביל פריט חדש
         function handleFileSelected(input) {
             if (input.files && input.files[0]) {
                 const file = input.files[0];
@@ -1152,7 +1186,7 @@
             const name = document.getElementById('newItemName').value.trim();
             const qty = document.getElementById('newItemQty').value.trim();
             const linkUrl = document.getElementById('newItemImageUrl').value.trim();
-
+            
             if (!name || !qty) {
                 showToast("חובה להזין שם פריט וכמות!", true);
                 return;
@@ -1167,7 +1201,7 @@
             const originalBtnHtml = submitBtn.innerHTML;
             submitBtn.disabled = true;
             submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> מעלה תמונה ומוסיף פריט...`;
-
+            
             try {
                 // בניית הבקשה לשרת עם הסיסמה המובטחת 8714441
                 const payload = {
@@ -1177,7 +1211,7 @@
                     name: name,
                     quantity: qty
                 };
-
+                
                 // הוספת התמונה לבקשה
                 if (currentImageSource === 'upload' && selectedImageBase64) {
                     payload.imageFile = selectedImageBase64;
@@ -1190,7 +1224,6 @@
                     method: 'POST',
                     body: JSON.stringify(payload)
                 });
-
                 const result = await res.json();
 
                 if (!res.ok || result.status !== 'ok') {
@@ -1211,9 +1244,166 @@
             }
         }
 
+        // --- מודל עדכון תמונה של שורה קיימת ---
+        function toggleEditImageModal() {
+            document.getElementById('edit-image-modal').classList.toggle('hidden');
+        }
+
+        function openEditImageModal(rowId, itemName) {
+            activeEditRowId = rowId;
+            document.getElementById('editImageItemName').textContent = `מטרת הפעולה: עדכון תמונה עבור השורה "${itemName}"`;
+            
+            // איפוס שדות מודאל העריכה
+            document.getElementById('editItemImageUrl').value = '';
+            document.getElementById('editItemFile').value = '';
+            document.getElementById('edit-file-upload-label').textContent = 'לחץ לבחירת תמונה מהגלריה';
+            selectedEditImageBase64 = null;
+            selectedEditImageName = null;
+
+            switchEditImageSource('upload');
+            toggleEditImageModal();
+        }
+
+        function switchEditImageSource(source) {
+            currentEditImageSource = source;
+            const uploadTab = document.getElementById('edit-img-src-upload-btn');
+            const linkTab = document.getElementById('edit-img-src-link-btn');
+            const uploadDiv = document.getElementById('edit-image-source-upload');
+            const linkDiv = document.getElementById('edit-image-source-link');
+            
+            if (source === 'upload') {
+                uploadTab.className = "w-1/2 py-1.5 rounded-md text-[10px] font-bold bg-slate-800 text-white transition-all";
+                linkTab.className = "w-1/2 py-1.5 rounded-md text-[10px] font-bold text-slate-400 hover:text-white transition-all";
+                uploadDiv.classList.remove('hidden');
+                linkDiv.classList.add('hidden');
+            } else {
+                linkTab.className = "w-1/2 py-1.5 rounded-md text-[10px] font-bold bg-slate-800 text-white transition-all";
+                uploadTab.className = "w-1/2 py-1.5 rounded-md text-[10px] font-bold text-slate-400 hover:text-white transition-all";
+                linkDiv.classList.remove('hidden');
+                uploadDiv.classList.add('hidden');
+            }
+        }
+
+        function handleEditFileSelected(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                selectedEditImageName = file.name;
+                document.getElementById('edit-file-upload-label').textContent = `נבחר קובץ: ${file.name}`;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    selectedEditImageBase64 = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function submitEditImage() {
+            if (!activeEditRowId) return;
+            const linkUrl = document.getElementById('editItemImageUrl').value.trim();
+
+            if (!scriptUrl) {
+                showToast("אנא הגדר תחילה את כתובת ה-Apps Script בהגדרות החיבור!", true);
+                return;
+            }
+
+            const submitBtn = document.getElementById('edit-image-submit-btn');
+            const originalBtnHtml = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> מעלה ומעדכן תמונה...`;
+            
+            try {
+                const payload = {
+                    secret: ADMIN_PASSWORD_HASH,
+                    action: 'updateImage',
+                    row: activeEditRowId
+                };
+                
+                if (currentEditImageSource === 'upload' && selectedEditImageBase64) {
+                    payload.imageFile = selectedEditImageBase64;
+                    payload.imageName = selectedEditImageName;
+                } else if (currentEditImageSource === 'link' && linkUrl) {
+                    payload.imageUrl = linkUrl;
+                } else {
+                    throw new Error("אנא בחר קובץ תמונה או הזן קישור תקין!");
+                }
+
+                const res = await fetch(scriptUrl, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await res.json();
+
+                if (!res.ok || result.status !== 'ok') {
+                    throw new Error(result.message || 'שגיאה בעדכון התמונה');
+                }
+
+                showToast("התמונה עודכנה בהצלחה!");
+                toggleEditImageModal();
+                fetchLiveSheetData();
+
+            } catch (err) {
+                console.error(err);
+                showToast(`עדכון התמונה נכשל: ${err.message}`, true);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnHtml;
+            }
+        }
+
+        // --- מחיקת שורה מתוחכמת וחסינה (ללא confirm דפדפן) ---
+        function toggleDeleteConfirmModal() {
+            document.getElementById('delete-confirm-modal').classList.toggle('hidden');
+        }
+
+        function confirmDeleteRow(rowId, itemName) {
+            activeDeleteRowId = rowId;
+            document.getElementById('deleteConfirmMessage').textContent = `האם אתה בטוח לחלוטין שברצונך למחוק את הפריט "${itemName}" (שורה מספר ${rowId}) לצמיתות מהמלאי?
+פעולה זו תסיר את השורה מגיליון ה-Google Sheets מיד!`;
+            toggleDeleteConfirmModal();
+        }
+
+        async function executeDeleteRow() {
+            if (!activeDeleteRowId) return;
+            
+            if (!scriptUrl) {
+                showToast("אנא הגדר תחילה את כתובת ה-Apps Script בהגדרות החיבור!", true);
+                toggleDeleteConfirmModal();
+                return;
+            }
+
+            try {
+                const res = await fetch(scriptUrl, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        secret: ADMIN_PASSWORD_HASH,
+                        action: 'deleteRow',
+                        row: activeDeleteRowId
+                    })
+                });
+                
+                const result = await res.json();
+
+                if (!res.ok || result.status !== 'ok') {
+                    throw new Error(result.message || 'פעולת המחיקה נכשלה בשרת');
+                }
+
+                showToast("הפריט נמחק בהצלחה מהמלאי!");
+                toggleDeleteConfirmModal();
+                fetchLiveSheetData(); // רענון מהשיטס
+
+            } catch (err) {
+                console.error(err);
+                showToast(`המחיקה נכשלה: ${err.message}`, true);
+                toggleDeleteConfirmModal();
+            }
+        }
+
         // עדכון כמות פריט בלייב מול הגיליון (דרך Apps Script Web App)
         async function updateQuantity(item, newQty) {
             newQty = String(newQty).trim();
+            
             if (newQty === '') {
                 showToast("יש להזין כמות תקינה", true);
                 renderCurrentView();
@@ -1222,13 +1412,14 @@
 
             if (!scriptUrl) {
                 showToast("אנא הגדר תחילה את כתובת ה-Apps Script בהגדרות החיבור!", true);
+                renderCurrentView();
                 return;
             }
 
             const previousQty = item.quantity;
             item.quantity = newQty; // עדכון אופטימי בממשק
             renderCurrentView();
-
+            
             try {
                 const res = await fetch(scriptUrl, {
                     method: 'POST',
@@ -1241,7 +1432,7 @@
                 });
 
                 const result = await res.json();
-
+                
                 if (!res.ok || result.status !== 'ok') {
                     throw new Error(result.message || 'עדכון נכשל');
                 }
@@ -1264,6 +1455,7 @@
 
         function getFilteredData() {
             const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
+            
             return inventoryData.filter(item => {
                 const matchesCategory = (selectedCategory === 'all' || item.category === selectedCategory);
                 const matchesSearch = item.name.toLowerCase().includes(searchVal) || item.category.toLowerCase().includes(searchVal);
