@@ -31,7 +31,7 @@
             <div class="flex items-center gap-4 text-slate-400">
                 <span>חיבור פעיל: <strong class="text-slate-300 font-mono text-[10px]" id="current-sheet-id-label">טוען מזהה...</strong></span>
                 <button onclick="toggleSetupModal()" class="text-emerald-400 hover:underline flex items-center gap-1">
-                    <i class="fa-solid fa-gear"></i> הגדרות חיבור ועריכה
+                    <i class="fa-solid fa-gear"></i> הגדרות חיבור חסין
                 </button>
             </div>
         </div>
@@ -42,31 +42,17 @@
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
             <!-- מיתוג המחסן -->
             <div class="flex items-center gap-3">
-                <div class="bg-emerald-500 p-2.5 rounded-xl text-slate-950 shadow-lg shadow-emerald-500/20">
+                <div class="bg-emerald-50 p-2.5 rounded-xl text-slate-950 shadow-lg shadow-emerald-500/20">
                     <i class="fa-solid fa-warehouse text-xl"></i>
                 </div>
                 <div>
                     <h1 class="text-xl font-black text-white tracking-tight">מלאי מחסן בזמן אמת</h1>
-                    <p class="text-slate-400 text-xs mt-0.5">סנכרון חסין לגוגל שיטס והעלאת תמונות מהשטח</p>
+                    <p class="text-slate-400 text-xs mt-0.5">סנכרון חסין לגוגל שיטס והצגת תמונות מהדרייב</p>
                 </div>
             </div>
             
             <!-- כפתורי פעולה מהירה -->
             <div class="flex flex-wrap items-center gap-2">
-                <!-- כפתור הוספת פריט - מופיע רק למנהל מחובר -->
-                <button id="admin-add-item-btn" onclick="toggleAddItemModal()" class="hidden bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition-all text-slate-950 font-bold px-4 py-2 rounded-xl flex items-center gap-2 text-xs shadow-md shadow-emerald-500/10">
-                    <i class="fa-solid fa-circle-plus"></i>
-                    הוסף פריט חדש
-                </button>
-
-                <button id="admin-login-btn" onclick="toggleAdminLoginModal()" class="bg-slate-800 hover:bg-slate-700 active:scale-95 transition-all text-white font-medium px-4 py-2 rounded-xl flex items-center gap-2 text-xs border border-slate-700">
-                    <i class="fa-solid fa-user-shield"></i>
-                    כניסת מנהל
-                </button>
-                <button id="admin-logout-btn" onclick="adminLogout()" class="hidden bg-rose-500/10 hover:bg-rose-500/20 active:scale-95 transition-all text-rose-400 font-medium px-4 py-2 rounded-xl flex items-center gap-2 text-xs border border-rose-500/30">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                    יציאה ממצב עריכה
-                </button>
                 <button onclick="fetchLiveSheetData()" class="bg-slate-800 hover:bg-slate-700 active:scale-95 transition-all text-white font-medium px-4 py-2 rounded-xl flex items-center gap-2 text-xs border border-slate-700">
                     <i id="sync-icon" class="fa-solid fa-rotate"></i>
                     סנכרן מהשיטס
@@ -135,7 +121,7 @@
                         <li>העתק את קישור השיתוף של התמונה והדבק אותו ישירות בעמודה <strong>"תמונה"</strong> (עמודה D) בגיליון.</li>
                     </ol>
                     <div class="p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-[11px] text-emerald-400">
-                        <i class="fa-solid fa-magic-wand-sparkles ml-1"></i> <strong>חדש:</strong> מנהלים יכולים להעלות קובץ תמונה ישירות מהמחשב או הטלפון והמערכת תעלה אותו לדרייב אוטומטית!
+                        <i class="fa-solid fa-magic-wand-sparkles ml-1"></i> המערכת תמיר את הקישור אוטומטית לתצוגה ויזואלית חלקה!
                     </div>
                 </div>
             </div>
@@ -213,7 +199,7 @@
 
     <!-- מודל הגדרות חיבור לשיטס אחר -->
     <div id="setup-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-md shadow-2xl relative max-h-[90vh] overflow-y-auto">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-md shadow-2xl relative">
             <button onclick="toggleSetupModal()" class="absolute left-4 top-4 text-slate-500 hover:text-slate-200">
                 <i class="fa-solid fa-xmark text-base"></i>
             </button>
@@ -222,15 +208,20 @@
                 הגדרות חיבור חסינות (בקיעת CORS)
             </h3>
             <p class="text-[11px] text-slate-400 leading-relaxed mb-4">
-                הדבק כאן את קישור ה"פרסום לאינטרנט" (Publish to web) של הגיליון שלך - הקישור שמסתיים ב-output=tsv או output=csv:
+                הדבק כאן את קישור השיתוף הרגיל של הגיליון שלך (הקישור מהדפדפן) או את ה-ID שלו:
             </p>
 
             <div class="space-y-4 text-xs">
                 <div>
-                    <label class="block font-bold text-slate-400 mb-1">קישור TSV/CSV מפורסם:</label>
+                    <label class="block font-bold text-slate-400 mb-1">קישור הגיליון או מזהה (ID):</label>
                     <textarea id="sheetIdInput" rows="3" 
                            class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500 text-white" 
-                           placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=tsv"></textarea>
+                           placeholder="הדבק כאן את קישור השיתוף של הגיליון מגוגל שיטס..."></textarea>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-400 mb-1">שם הלשונית (במידה ויש כמה):</label>
+                    <input type="text" id="sheetTabInput" value="" placeholder="מלאי מחסן - צילומים מיוצאים" 
+                           class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-white">
                 </div>
                 
                 <div class="pt-2 flex gap-2">
@@ -239,131 +230,6 @@
                     </button>
                     <button onclick="resetSetupConfig()" class="px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs">
                         איפוס
-                    </button>
-                </div>
-            </div>
-
-            <hr class="border-slate-800 my-5">
-
-            <h3 class="font-bold text-base text-white mb-2 flex items-center gap-2">
-                <i class="fa-solid fa-user-shield text-rose-400"></i>
-                הגדרות עריכה חיה (מנהל בלבד)
-            </h3>
-            <p class="text-[11px] text-slate-400 leading-relaxed mb-4">
-                כדי לאפשר עדכון כמויות והוספת פריטים בלייב, יש להדביק כאן את כתובת ה-Apps Script Web App ולקבוע סיסמת מנהל משותפת.
-            </p>
-
-            <div class="space-y-4 text-xs">
-                <div>
-                    <label class="block font-bold text-slate-400 mb-1">כתובת Web App לעדכון והוספה:</label>
-                    <textarea id="scriptUrlInput" rows="2"
-                           class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-rose-500 text-white"
-                           placeholder="https://script.google.com/macros/s/.../exec"></textarea>
-                </div>
-                <div>
-                    <label class="block font-bold text-slate-400 mb-1">סיסמת מנהל משותפת:</label>
-                    <input type="text" id="adminPasswordInput"
-                           class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 text-white"
-                           placeholder="בחר סיסמה">
-                </div>
-                <div class="pt-1">
-                    <button onclick="saveAdminConfig()" class="w-full bg-rose-500 hover:bg-rose-600 active:scale-95 transition text-white font-bold py-2 rounded-lg text-xs">
-                        שמור הגדרות עריכה
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- מודל כניסת מנהל -->
-    <div id="admin-login-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-sm shadow-2xl relative">
-            <button onclick="toggleAdminLoginModal()" class="absolute left-4 top-4 text-slate-500 hover:text-slate-200">
-                <i class="fa-solid fa-xmark text-base"></i>
-            </button>
-            <h3 class="font-bold text-base text-white mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-user-shield text-emerald-400"></i>
-                כניסת מנהל
-            </h3>
-            <div class="space-y-3 text-xs">
-                <input type="password" id="adminLoginPasswordField" placeholder="סיסמת מנהל"
-                       onkeydown="if(event.key==='Enter') attemptAdminLogin()"
-                       class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-white">
-                <button onclick="attemptAdminLogin()" class="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition text-slate-950 font-bold py-2.5 rounded-lg text-xs">
-                    כניסה
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- מודל הוספת פריט חדש (למנהל בלבד) -->
-    <div id="add-item-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-md shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            <button onclick="toggleAddItemModal()" class="absolute left-4 top-4 text-slate-500 hover:text-slate-200">
-                <i class="fa-solid fa-xmark text-base"></i>
-            </button>
-            <h3 class="font-bold text-base text-white mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-circle-plus text-emerald-400"></i>
-                הוספת פריט חדש למלאי
-            </h3>
-            
-            <div class="space-y-4 text-xs">
-                <!-- קטגוריה -->
-                <div>
-                    <label class="block font-bold text-slate-400 mb-1">מכולה/קטגוריה:</label>
-                    <select id="newItemCategory" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        <option value="תשורות">תשורות</option>
-                        <option value="חשמל">חשמל</option>
-                        <option value="ספר">ספרים</option>
-                        <option value="ערכת נהג">ערכת נהג</option>
-                    </select>
-                </div>
-
-                <!-- שם הפריט -->
-                <div>
-                    <label class="block font-bold text-slate-400 mb-1">שם הפריט:</label>
-                    <input type="text" id="newItemName" placeholder="הקלד שם פריט..." class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                </div>
-
-                <!-- כמות -->
-                <div>
-                    <label class="block font-bold text-slate-400 mb-1">כמות ראשונית:</label>
-                    <input type="text" id="newItemQty" placeholder="לדוגמה: 45 או 3 קרטונים..." class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                </div>
-
-                <!-- תמונה (קישור או העלאת קובץ) -->
-                <div>
-                    <label class="block font-bold text-slate-400 mb-1">בחירת תמונה לפריט:</label>
-                    
-                    <!-- טאבים לבחירת מקור תמונה -->
-                    <div class="flex gap-2 mb-2 bg-slate-950 p-1 rounded-lg border border-slate-800">
-                        <button onclick="switchImageSource('upload')" id="img-src-upload-btn" class="w-1/2 py-1.5 rounded-md text-[10px] font-bold bg-slate-800 text-white transition-all">העלאת קובץ</button>
-                        <button onclick="switchImageSource('link')" id="img-src-link-btn" class="w-1/2 py-1.5 rounded-md text-[10px] font-bold text-slate-400 hover:text-white transition-all">הדבקת קישור</button>
-                    </div>
-
-                    <!-- העלאת קובץ מהמכשיר -->
-                    <div id="image-source-upload" class="space-y-2">
-                        <div class="flex items-center justify-center w-full">
-                            <label class="flex flex-col items-center justify-center w-full h-24 border-2 border-slate-800 border-dashed rounded-lg cursor-pointer bg-slate-950 hover:bg-slate-800/30 transition">
-                                <div class="flex flex-col items-center justify-center pt-2 pb-2">
-                                    <i class="fa-solid fa-cloud-arrow-up text-slate-500 text-lg mb-1"></i>
-                                    <p class="text-[10px] text-slate-400 font-semibold" id="file-upload-label">לחץ לבחירת תמונה מהגלריה</p>
-                                </div>
-                                <input type="file" id="newItemFile" accept="image/*" class="hidden" onchange="handleFileSelected(this)">
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- קישור קיים מגוגל דרייב -->
-                    <div id="image-source-link" class="hidden">
-                        <input type="text" id="newItemImageUrl" placeholder="הדבק קישור שיתוף של גוגל דרייב..." class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                    </div>
-                </div>
-
-                <div class="pt-2">
-                    <button id="add-item-submit-btn" onclick="submitNewItem()" class="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition text-slate-950 font-bold py-3 rounded-xl text-xs shadow-md shadow-emerald-500/10 flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-save"></i>
-                        שמור פריט והעלה למלאי
                     </button>
                 </div>
             </div>
@@ -391,22 +257,14 @@
     <!-- לוגיקת המערכת והסנכרון החי -->
     <script>
         const CONFIG_KEY_ID = "mhasan_sheet_id";
-        const CONFIG_KEY_SCRIPT_URL = "mhasan_script_url";
-        const CONFIG_KEY_ADMIN_PASS = "mhasan_admin_pass";
+        const CONFIG_KEY_TAB = "mhasan_sheet_tab";
 
-        const DEFAULT_TSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTuQLVgP-0Wo-yN0sOv1vCN5DTpmiCaZn3eHlXQsVwldauvyU1sWwq2Vg9SWYwK8wYRVFyVUgos8u5U/pub?output=tsv";
-
-        let currentSheetId = localStorage.getItem(CONFIG_KEY_ID) || DEFAULT_TSV_URL;
-        let scriptUrl = localStorage.getItem(CONFIG_KEY_SCRIPT_URL) || "";
-        let adminPassword = localStorage.getItem(CONFIG_KEY_ADMIN_PASS) || "";
-        let isAdmin = sessionStorage.getItem('mhasan_is_admin') === 'true';
+        let currentSheetId = localStorage.getItem(CONFIG_KEY_ID) || "1RKzOluKtBBWrUsP63lg8RMNKXZqD4vweQZgT16EPSEg";
+        let currentSheetTab = localStorage.getItem(CONFIG_KEY_TAB) || "";
         
         let inventoryData = [];
         let selectedCategory = 'all';
         let currentViewMode = 'table';
-        let currentImageSource = 'upload';
-        let selectedImageBase64 = null;
-        let selectedImageName = null;
 
         // נתוני גיבוי מקומיים למקרה של אופליין
         const localBackupData = [
@@ -563,82 +421,94 @@
         ];
 
         document.addEventListener('DOMContentLoaded', () => {
-            updateAdminUI();
             fetchLiveSheetData();
         });
 
-        // חילוץ ID ומזהי דרייב בצורה חסינה ויציבה לחלוטין (משתמש בשרת התמונות המהיר של גוגל)
+        // חילוץ ID ומזהי דרייב בצורה חסינה
         function parseDriveImageUrl(url) {
             if (!url) return '';
             url = url.trim();
             
-            // זיהוי ID מתוך מגוון פורמטים של קישורי דרייב
-            const patterns = [
-                /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/,
-                /drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/,
-                /docs\.google\.com\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/,
-                /id=([a-zA-Z0-9_-]+)/
-            ];
+            const standardRegex = /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/;
+            const match = url.match(standardRegex);
+            if (match && match[1]) {
+                return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
+            }
 
-            for (let pattern of patterns) {
-                const match = url.match(pattern);
-                if (match && match[1]) {
-                    // שימוש בפורמט lh3.googleusercontent המהיר והחסין ביותר לעבודה חיצונית!
-                    return `https://lh3.googleusercontent.com/d/${match[1]}`;
-                }
+            const idRegex = /[?&]id=([a-zA-Z0-9_-]+)/;
+            const matchId = url.match(idRegex);
+            if (matchId && matchId[1]) {
+                return `https://drive.google.com/thumbnail?id=${matchId[1]}&sz=w1000`;
+            }
+
+            const shortRegex = /drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/;
+            const matchShort = url.match(shortRegex);
+            if (matchShort && matchShort[1]) {
+                return `https://drive.google.com/thumbnail?id=${matchShort[1]}&sz=w1000`;
             }
 
             return url;
         }
 
-        // ממיר קישור "פרסום לאינטרנט" (pubhtml / edit) לכתובת TSV תקינה
-        function normalizeToTsvUrl(input) {
-            if (!input) return DEFAULT_TSV_URL;
+        // מפענח מזהה גיליון מכל קישור שיתוף שהמשתמש הדביק
+        function extractSheetId(input) {
+            if (!input) return "";
             input = input.trim();
-
-            if (/output=(tsv|csv)/.test(input)) {
+            
+            // אם זה כבר ID נקי
+            if (/^[a-zA-Z0-9-_]{44}$/.test(input)) {
                 return input;
             }
-
-            if (/\/pub\b/.test(input)) {
-                return input.includes('?') ? `${input}&output=tsv` : `${input}?output=tsv`;
+            
+            // חילוץ מקישור שיתוף רגיל
+            const matches = input.match(/\/d\/([a-zA-Z0-9-_]{44})/);
+            if (matches && matches[1]) {
+                return matches[1];
             }
-
-            return input;
+            
+            return input; // fallback
         }
 
-        // פירוק טקסט TSV גולמי למערך שורות/תאים
-        function parseTsv(text) {
-            let lines = text.replace(/\r/g, '').split('\n');
-            while (lines.length && lines[lines.length - 1] === '') lines.pop();
-            return lines.slice(1).map(line => line.split('\t'));
-        }
-
-        // משיכת הנתונים ישירות מקישור הפרסום (CORS פתוח מצד גוגל)
-        async function fetchTsvData(tsvUrl) {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-            try {
-                const res = await fetch(`${tsvUrl}${tsvUrl.includes('?') ? '&' : '?'}_=${Date.now()}`, {
-                    signal: controller.signal,
-                    cache: 'no-store'
-                });
-                clearTimeout(timeoutId);
-
-                if (!res.ok) {
-                    throw new Error(`גוגל שיטס החזיר שגיאת HTTP ${res.status}`);
-                }
-
-                const text = await res.text();
-                return parseTsv(text);
-            } catch (err) {
-                clearTimeout(timeoutId);
-                if (err.name === 'AbortError') {
-                    throw new Error("פג זמן ההתקשרות (Timeout) - ודא שיש חיבור אינטרנט");
-                }
-                throw new Error("שגיאת רשת בטעינת הגיליון - ודא שהקישור עדיין מפורסם ('פרסום לאינטרנט')");
-            }
+        // --- מנגנון JSONP חסין CORS למשיכת נתונים ישירות מהקובץ המקומי ---
+        function fetchWithJSONP(sheetId, tabName) {
+            return new Promise((resolve, reject) => {
+                const callbackName = 'handleSheetResponse_' + Math.round(Math.random() * 1000000);
+                
+                // יצירת פונקציית קולבק גלובלית זמנית
+                window[callbackName] = function(response) {
+                    document.getElementById(callbackName)?.remove();
+                    delete window[callbackName];
+                    
+                    if (response && response.status === 'ok') {
+                        resolve(response);
+                    } else {
+                        reject(new Error("גוגל שיטס החזיר שגיאה במבנה הנתונים"));
+                    }
+                };
+                
+                // הגדרת טיימאאוט למקרה שאין רשת
+                const timeoutId = setTimeout(() => {
+                    document.getElementById(callbackName)?.remove();
+                    delete window[callbackName];
+                    reject(new Error("פג זמן ההתקשרות (Timeout) - ודא שיש חיבור אינטרנט והקובץ משותף"));
+                }, 8000);
+                
+                const encodedTab = tabName ? `&sheet=${encodeURIComponent(tabName)}` : '';
+                const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=responseHandler:${callbackName}${encodedTab}`;
+                
+                // יצירת תגית הסקריפט ושתילתה בדף
+                const script = document.createElement('script');
+                script.id = callbackName;
+                script.src = url;
+                script.onerror = () => {
+                    clearTimeout(timeoutId);
+                    document.getElementById(callbackName)?.remove();
+                    delete window[callbackName];
+                    reject(new Error("שגיאת רשת בטעינת הגיליון (CORS/Network)"));
+                };
+                
+                document.body.appendChild(script);
+            });
         }
 
         // משיכת הנתונים וסנכרון חסין
@@ -653,33 +523,43 @@
             const indicatorDot = document.getElementById('connection-indicator-dot');
             const indicatorText = document.getElementById('connection-indicator-text');
 
-            const tsvUrl = normalizeToTsvUrl(currentSheetId);
-            document.getElementById('current-sheet-id-label').textContent = "מחובר לקישור TSV";
+            const sheetId = extractSheetId(currentSheetId);
+            document.getElementById('current-sheet-id-label').textContent = sheetId ? "ID: " + sheetId.substring(0, 8) + "..." : "מזהה חסר";
 
             try {
-                const rows = await fetchTsvData(tsvUrl);
+                // קריאה ישירה באמצעות מנגנון JSONP שעוקף חסימות אבטחה מקומיות
+                const response = await fetchWithJSONP(sheetId, currentSheetTab);
+                
+                const rows = response.table.rows;
                 const freshData = [];
+                let rowCounter = 2;
 
-                rows.forEach((cells, idx) => {
-                    const sheetRow = idx + 2; // שורה 1 היא כותרת, המערך מתחיל מ-0
-                    if (!cells || cells.length === 0) return;
+                rows.forEach(r => {
+                    if (!r || !r.c) return;
 
-                    const getVal = (index) => (cells[index] !== undefined ? cells[index].trim() : '');
+                    // פונקציית עזר לחילוץ ערכים בטוח מתאי גוגל שיטס
+                    const getVal = (index) => {
+                        if (r.c[index] && r.c[index].v !== null && r.c[index].v !== undefined) {
+                            return r.c[index].v.toString().trim();
+                        }
+                        return '';
+                    };
 
                     const cat = getVal(0);
                     const name = getVal(1);
                     const qty = getVal(2) || '-';
                     const rawImg = getVal(3);
 
-                    if (!name) return; 
+                    if (!name) return; // דילוג על שורות ריקות בטבלה
 
                     freshData.push({
-                        id: sheetRow,
+                        id: rowCounter,
                         category: cat || 'כללי',
                         name: name,
                         quantity: qty,
                         image: parseDriveImageUrl(rawImg)
                     });
+                    rowCounter++;
                 });
 
                 if (freshData.length === 0) throw new Error("לא נמצאו נתונים בגיליון");
@@ -687,7 +567,7 @@
                 inventoryData = freshData;
                 
                 indicatorDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
-                indicatorText.textContent = "מחובר ל-Google Sheets בזמן אמת!";
+                indicatorText.textContent = "מחובר ל-Google Sheets (סנכרון חסין פעיל!)";
                 showToast("הנתונים סונכרנו בהצלחה מהענן!");
 
             } catch (error) {
@@ -740,27 +620,14 @@
                 
                 const hasImage = item.image !== '';
                 const imageColContent = hasImage 
-                    ? `<div class="flex justify-center">
-                            <img src="${item.image}" alt="${item.name}" 
-                                 class="h-10 w-16 object-cover rounded-lg border border-slate-700 shadow-md hover:scale-110 transition cursor-zoom-in" 
-                                 onclick="openZoomModal('${item.image}', '${item.name}', '${item.quantity}')" 
-                                 onerror="handleImageLoadError(this)">
-                       </div>` 
+                    ? `<div class="flex justify-center"><img src="${item.image}" alt="${item.name}" class="h-10 w-16 object-cover rounded-lg border border-slate-700 shadow-md hover:scale-110 transition cursor-zoom-in" onclick="openZoomModal('${item.image}', '${item.name}', '${item.quantity}')" onerror="this.src='https://placehold.co/100x60/1e293b/94a3b8?text=Error'"></div>` 
                     : `<span class="text-slate-600 italic">אין תמונה</span>`;
-
-                const qtyContent = isAdmin
-                    ? `<div class="flex items-center justify-center gap-1">
-                            <button onclick="updateQuantity(findItemById(${item.id}), Number(findItemById(${item.id}).quantity) - 1)" class="w-6 h-6 rounded-md bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-300 flex items-center justify-center transition"><i class="fa-solid fa-minus text-[10px]"></i></button>
-                            <input type="text" value="${item.quantity}" onchange="updateQuantity(findItemById(${item.id}), this.value)" class="w-14 text-center bg-slate-950 border border-slate-700 rounded-md py-1 text-emerald-400 font-bold text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                            <button onclick="updateQuantity(findItemById(${item.id}), Number(findItemById(${item.id}).quantity) + 1)" class="w-6 h-6 rounded-md bg-slate-800 hover:bg-emerald-500/20 hover:text-emerald-400 text-slate-300 flex items-center justify-center transition"><i class="fa-solid fa-plus text-[10px]"></i></button>
-                       </div>`
-                    : `${item.quantity}`;
 
                 tr.innerHTML = `
                     <td class="py-3 px-4 text-center font-medium text-slate-500 text-xs">${item.id}</td>
                     <td class="py-3 px-4">${getCategoryBadge(item.category)}</td>
                     <td class="py-3 px-4 font-medium text-white">${item.name}</td>
-                    <td class="py-3 px-4 text-center font-bold text-emerald-400 text-sm">${qtyContent}</td>
+                    <td class="py-3 px-4 text-center font-bold text-emerald-400 text-sm">${item.quantity}</td>
                     <td class="py-3 px-4 text-center">${imageColContent}</td>
                 `;
                 tbody.appendChild(tr);
@@ -792,17 +659,9 @@
                 const hasImage = item.image !== '';
                 const imageSrc = hasImage ? item.image : "https://placehold.co/300x200/0f172a/475569?text=No+Image";
 
-                const qtyContent = isAdmin
-                    ? `<div class="flex items-center gap-1" onclick="event.stopPropagation()">
-                            <button onclick="updateQuantity(findItemById(${item.id}), Number(findItemById(${item.id}).quantity) - 1)" class="w-6 h-6 rounded-md bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-300 flex items-center justify-center transition"><i class="fa-solid fa-minus text-[10px]"></i></button>
-                            <input type="text" value="${item.quantity}" onchange="updateQuantity(findItemById(${item.id}), this.value)" class="w-14 text-center bg-slate-950 border border-slate-700 rounded-md py-1 text-emerald-400 font-bold text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                            <button onclick="updateQuantity(findItemById(${item.id}), Number(findItemById(${item.id}).quantity) + 1)" class="w-6 h-6 rounded-md bg-slate-800 hover:bg-emerald-500/20 hover:text-emerald-400 text-slate-300 flex items-center justify-center transition"><i class="fa-solid fa-plus text-[10px]"></i></button>
-                       </div>`
-                    : `<span class="font-black text-emerald-400 text-sm bg-emerald-500/10 px-2.5 py-1 rounded-lg">${item.quantity}</span>`;
-
                 card.innerHTML = `
                     <div class="h-40 w-full bg-slate-950 flex items-center justify-center overflow-hidden border-b border-slate-800 relative">
-                        <img src="${imageSrc}" alt="${item.name}" class="h-full w-full object-cover transition-transform duration-300 hover:scale-105" onerror="handleImageLoadError(this)">
+                        <img src="${imageSrc}" alt="${item.name}" class="h-full w-full object-cover transition-transform duration-300 hover:scale-105" onerror="this.src='https://placehold.co/300x200/0f172a/e2e8f0?text=Error'">
                         <span class="absolute top-3 right-3 bg-slate-950/80 backdrop-blur text-[10px] text-slate-400 px-2 py-0.5 rounded-md font-mono">שורה ${item.id}</span>
                     </div>
                     <div class="p-4 flex-1 flex flex-col justify-between">
@@ -812,19 +671,12 @@
                         </div>
                         <div class="mt-4 pt-3 border-t border-slate-800/80 flex justify-between items-center">
                             <span class="text-[11px] text-slate-500">כמות במחסן:</span>
-                            ${qtyContent}
+                            <span class="font-black text-emerald-400 text-sm bg-emerald-500/10 px-2.5 py-1 rounded-lg">${item.quantity}</span>
                         </div>
                     </div>
                 `;
                 container.appendChild(card);
             });
-        }
-
-        // פונקציית טיפול בשגיאות טעינת תמונה עם פלייסהולדר יפה ואזהרת שיתוף
-        function handleImageLoadError(imgEl) {
-            imgEl.onerror = null; // מניעת לולאה אינסופית
-            imgEl.src = "https://placehold.co/300x200/1e293b/ef4444?text=🔒+Check+Drive+Permissions";
-            imgEl.title = "הטעינה נכשלה. ודא שהקובץ בדרייב מוגדר כציבורי לכל מי שיש לו קישור!";
         }
 
         // עיצוב תגיות הקטגוריה
@@ -840,7 +692,14 @@
 
         // סינון לפי חיפוש
         function filterData() {
-            const filtered = getFilteredData();
+            const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            const filtered = inventoryData.filter(item => {
+                const matchesCategory = (selectedCategory === 'all' || item.category === selectedCategory);
+                const matchesSearch = item.name.toLowerCase().includes(searchVal) || item.category.toLowerCase().includes(searchVal);
+                return matchesCategory && matchesSearch;
+            });
+
             document.getElementById('filteredItems').textContent = filtered.length;
 
             if (currentViewMode === 'table') {
@@ -939,20 +798,23 @@
             const modal = document.getElementById('setup-modal');
             modal.classList.toggle('hidden');
             document.getElementById('sheetIdInput').value = currentSheetId;
-            document.getElementById('scriptUrlInput').value = scriptUrl;
-            document.getElementById('adminPasswordInput').value = adminPassword;
+            document.getElementById('sheetTabInput').value = currentSheetTab;
         }
 
         function saveSetupConfig() {
             const newIdInput = document.getElementById('sheetIdInput').value.trim();
+            const newTab = document.getElementById('sheetTabInput').value.trim();
 
             if (!newIdInput) {
-                showToast("חובה להזין קישור!", true);
+                showToast("חובה להזין מזהה או קישור!", true);
                 return;
             }
 
             currentSheetId = newIdInput;
+            currentSheetTab = newTab;
+
             localStorage.setItem(CONFIG_KEY_ID, newIdInput);
+            localStorage.setItem(CONFIG_KEY_TAB, newTab);
 
             toggleSetupModal();
             fetchLiveSheetData();
@@ -960,241 +822,11 @@
 
         function resetSetupConfig() {
             localStorage.removeItem(CONFIG_KEY_ID);
-            currentSheetId = DEFAULT_TSV_URL;
+            localStorage.removeItem(CONFIG_KEY_TAB);
+            currentSheetId = "1RKzOluKtBBWrUsP63lg8RMNKXZqD4vweQZgT16EPSEg";
+            currentSheetTab = "";
             toggleSetupModal();
             fetchLiveSheetData();
-        }
-
-        // שמירת הגדרות עריכה חיה (Web App + סיסמת מנהל)
-        function saveAdminConfig() {
-            const newScriptUrl = document.getElementById('scriptUrlInput').value.trim();
-            const newPassword = document.getElementById('adminPasswordInput').value.trim();
-
-            scriptUrl = newScriptUrl;
-            adminPassword = newPassword;
-
-            localStorage.setItem(CONFIG_KEY_SCRIPT_URL, newScriptUrl);
-            localStorage.setItem(CONFIG_KEY_ADMIN_PASS, newPassword);
-
-            showToast("הגדרות העריכה החיה נשמרו!");
-        }
-
-        // --- ניהול כניסת מנהל ---
-        function toggleAdminLoginModal() {
-            document.getElementById('admin-login-modal').classList.toggle('hidden');
-            document.getElementById('adminLoginPasswordField').value = '';
-            document.getElementById('adminLoginPasswordField').focus();
-        }
-
-        function attemptAdminLogin() {
-            const entered = document.getElementById('adminLoginPasswordField').value;
-
-            if (!adminPassword) {
-                showToast("טרם הוגדרה סיסמת מנהל - היכנס ל'הגדרות חיבור חסין' כדי להגדיר אחת", true);
-                return;
-            }
-
-            if (entered === adminPassword) {
-                isAdmin = true;
-                sessionStorage.setItem('mhasan_is_admin', 'true');
-                toggleAdminLoginModal();
-                updateAdminUI();
-                showToast("מצב עריכה הופעל - ניתן לעדכן כמויות ולהעלות פריטים בלייב!");
-            } else {
-                showToast("סיסמה שגויה", true);
-            }
-        }
-
-        function adminLogout() {
-            isAdmin = false;
-            sessionStorage.removeItem('mhasan_is_admin');
-            updateAdminUI();
-            showToast("יצאת ממצב עריכה");
-        }
-
-        function updateAdminUI() {
-            document.getElementById('admin-login-btn').classList.toggle('hidden', isAdmin);
-            document.getElementById('admin-logout-btn').classList.toggle('hidden', !isAdmin);
-            document.getElementById('admin-add-item-btn').classList.toggle('hidden', !isAdmin);
-            filterData(); 
-        }
-
-        // --- הוספת פריט חדש (מודאל) ---
-        function toggleAddItemModal() {
-            document.getElementById('add-item-modal').classList.toggle('hidden');
-            // איפוס שדות המודאל
-            document.getElementById('newItemName').value = '';
-            document.getElementById('newItemQty').value = '';
-            document.getElementById('newItemImageUrl').value = '';
-            document.getElementById('newItemFile').value = '';
-            document.getElementById('file-upload-label').textContent = 'לחץ לבחירת תמונה מהגלריה';
-            selectedImageBase64 = null;
-            selectedImageName = null;
-        }
-
-        function switchImageSource(source) {
-            currentImageSource = source;
-            const uploadTab = document.getElementById('img-src-upload-btn');
-            const linkTab = document.getElementById('img-src-link-btn');
-            const uploadDiv = document.getElementById('image-source-upload');
-            const linkDiv = document.getElementById('image-source-link');
-
-            if (source === 'upload') {
-                uploadTab.className = "w-1/2 py-1.5 rounded-md text-[10px] font-bold bg-slate-800 text-white transition-all";
-                linkTab.className = "w-1/2 py-1.5 rounded-md text-[10px] font-bold text-slate-400 hover:text-white transition-all";
-                uploadDiv.classList.remove('hidden');
-                linkDiv.classList.add('hidden');
-            } else {
-                linkTab.className = "w-1/2 py-1.5 rounded-md text-[10px] font-bold bg-slate-800 text-white transition-all";
-                uploadTab.className = "w-1/2 py-1.5 rounded-md text-[10px] font-bold text-slate-400 hover:text-white transition-all";
-                linkDiv.classList.remove('hidden');
-                uploadDiv.classList.add('hidden');
-            }
-        }
-
-        // קריאת הקובץ והפיכתו ל-Base64 כדי שנוכל לשלוח אותו ל-Apps Script
-        function handleFileSelected(input) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                selectedImageName = file.name;
-                document.getElementById('file-upload-label').textContent = `נבחר קובץ: ${file.name}`;
-
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    selectedImageBase64 = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        // שליחת הפריט החדש אל ה-Web App של גוגל שיטס
-        async function submitNewItem() {
-            const cat = document.getElementById('newItemCategory').value;
-            const name = document.getElementById('newItemName').value.trim();
-            const qty = document.getElementById('newItemQty').value.trim();
-            const linkUrl = document.getElementById('newItemImageUrl').value.trim();
-
-            if (!name || !qty) {
-                showToast("חובה להזין שם פריט וכמות!", true);
-                return;
-            }
-
-            if (!scriptUrl) {
-                showToast("לא הוגדרה כתובת Web App בהגדרות!", true);
-                return;
-            }
-
-            const submitBtn = document.getElementById('add-item-submit-btn');
-            const originalBtnHtml = submitBtn.innerHTML;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> מעלה תמונה ומוסיף פריט...`;
-
-            try {
-                // בניית הבקשה
-                const payload = {
-                    secret: adminPassword,
-                    action: 'addItem',
-                    category: cat,
-                    name: name,
-                    quantity: qty
-                };
-
-                // הוספת התמונה לבקשה
-                if (currentImageSource === 'upload' && selectedImageBase64) {
-                    payload.imageFile = selectedImageBase64;
-                    payload.imageName = selectedImageName;
-                } else if (currentImageSource === 'link' && linkUrl) {
-                    payload.imageUrl = linkUrl;
-                }
-
-                const res = await fetch(scriptUrl, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
-
-                const result = await res.json();
-
-                if (!res.ok || result.status !== 'ok') {
-                    throw new Error(result.message || 'שגיאה בשמירת הפריט');
-                }
-
-                showToast(`הפריט "${name}" נוסף בהצלחה למלאי!`);
-                toggleAddItemModal();
-                
-                // משיכת נתונים מחדש כדי להציג את הפריט החדש מיד
-                fetchLiveSheetData();
-
-            } catch (err) {
-                console.error(err);
-                showToast(`ההעלאה נכשלה: ${err.message}`, true);
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnHtml;
-            }
-        }
-
-        // עדכון כמות פריט בלייב מול הגיליון (דרך Apps Script Web App)
-        async function updateQuantity(item, newQty) {
-            newQty = String(newQty).trim();
-            if (newQty === '') {
-                showToast("יש להזין כמות תקינה", true);
-                renderCurrentView();
-                return;
-            }
-
-            if (!scriptUrl) {
-                showToast("טרם הוגדרה כתובת Web App לעדכון - היכנס ל'הגדרות חיבור חסין'", true);
-                return;
-            }
-
-            const previousQty = item.quantity;
-            item.quantity = newQty; // עדכון אופטימי בממשק
-            renderCurrentView();
-
-            try {
-                const res = await fetch(scriptUrl, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        secret: adminPassword,
-                        action: 'updateQuantity',
-                        row: item.id,
-                        quantity: newQty
-                    })
-                });
-
-                const result = await res.json();
-
-                if (!res.ok || result.status !== 'ok') {
-                    throw new Error(result.message || 'עדכון נכשל');
-                }
-
-                showToast(`הכמות של "${item.name}" עודכנה ל-${newQty}`);
-            } catch (err) {
-                item.quantity = previousQty; // שחזור במקרה של כשל
-                renderCurrentView();
-                showToast("עדכון הכמות נכשל - בדוק את חיבור ה-Web App", true);
-            }
-        }
-
-        function renderCurrentView() {
-            if (currentViewMode === 'table') {
-                renderTable(getFilteredData());
-            } else {
-                renderGrid(getFilteredData());
-            }
-        }
-
-        function getFilteredData() {
-            const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
-            return inventoryData.filter(item => {
-                const matchesCategory = (selectedCategory === 'all' || item.category === selectedCategory);
-                const matchesSearch = item.name.toLowerCase().includes(searchVal) || item.category.toLowerCase().includes(searchVal);
-                return matchesCategory && matchesSearch;
-            });
-        }
-
-        function findItemById(id) {
-            return inventoryData.find(i => i.id === id);
         }
 
         // התראה קופצת
