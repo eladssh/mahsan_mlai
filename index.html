@@ -253,7 +253,9 @@
         // אתחול Supabase
         const SUPABASE_URL = "https://gumrukucfdbwibmjvqlb.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd1bXJ1a3VjZmRid2libWp2cWxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwODc3NDYsImV4cCI6MjA5ODY2Mzc0Nn0.BTyxqd_WbGTaFY0qqm5Ck23fu1pNIahTww9gXoeFbIE";
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // שינינו כאן את השם ל-supabaseClient כדי למנוע התנגשות
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const ADMIN_PASSWORD_HASH = "8714441"; 
 
@@ -280,17 +282,17 @@
             const fileExt = file.name.split('.').pop();
             const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
             
-            const { data, error } = await supabase.storage
-                .from('item-images')
+            const { data, error } = await supabaseClient.storage
+                .from('item-images') 
                 .upload(fileName, file);
 
             if (error) {
                 console.error("Storage upload error:", error);
-                throw new Error("שגיאה בהעלאת התמונה: התיקייה item-images קיימת?");
+                throw new Error("שגיאה בהעלאת התמונה: התיקייה item-images לא נמצאה או שאין הרשאות");
             }
 
-            const { data: publicUrlData } = supabase.storage
-                .from('item-images')
+            const { data: publicUrlData } = supabaseClient.storage
+                .from('item-images') 
                 .getPublicUrl(fileName);
 
             return publicUrlData.publicUrl;
@@ -307,7 +309,7 @@
             const indicatorText = document.getElementById('connection-indicator-text');
 
             try {
-                const { data, error } = await supabase.from('inventory').select('*').order('id', { ascending: true });
+                const { data, error } = await supabaseClient.from('inventory').select('*').order('id', { ascending: true });
                 if (error) throw error;
 
                 inventoryData = data.map(item => ({
@@ -515,7 +517,7 @@
 
                 submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> שומר במסד הנתונים...`;
                 
-                const { error } = await supabase.from('inventory').insert([{
+                const { error } = await supabaseClient.from('inventory').insert([{
                     category: cat,
                     name: name,
                     quantity: qty,
@@ -573,7 +575,7 @@
 
                 submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> מעדכן רשומה...`;
 
-                const { error } = await supabase.from('inventory')
+                const { error } = await supabaseClient.from('inventory')
                     .update({ image_url: finalImageUrl })
                     .eq('id', activeEditRowId);
 
@@ -600,7 +602,7 @@
         async function executeDeleteRow() {
             if (!activeDeleteRowId) return toggleDeleteConfirmModal();
             try {
-                const { error } = await supabase.from('inventory')
+                const { error } = await supabaseClient.from('inventory')
                     .delete()
                     .eq('id', activeDeleteRowId);
 
@@ -625,7 +627,7 @@
             renderCurrentView();
 
             try {
-                const { error } = await supabase.from('inventory')
+                const { error } = await supabaseClient.from('inventory')
                     .update({ quantity: newQty })
                     .eq('id', itemId);
 
