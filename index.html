@@ -250,11 +250,9 @@
     </div>
 
     <script>
-        // אתחול Supabase
+        // אתחול Supabase תחת שם ייחודי כדי למנוע התנגשויות
         const SUPABASE_URL = "https://gumrukucfdbwibmjvqlb.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd1bXJ1a3VjZmRid2libWp2cWxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwODc3NDYsImV4cCI6MjA5ODY2Mzc0Nn0.BTyxqd_WbGTaFY0qqm5Ck23fu1pNIahTww9gXoeFbIE";
-        
-        // שינינו כאן את השם ל-supabaseClient כדי למנוע התנגשות
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const ADMIN_PASSWORD_HASH = "8714441"; 
