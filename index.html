@@ -2,75 +2,99 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>מערכת ניהול מלאי חיה - מחסן ציוד</title>
-    <!-- Tailwind CSS לעיצוב מודרני -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>מערכת ניהול מלאי - מרכז הובלה</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- פונט רוביק בעברית -->
+    
+    <!-- פונט רוביק -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
-    <!-- אייקונים ידידותיים -->
+    
+    <!-- FontAwesome לאייקונים -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- ייבוא ה-SDK של Supabase -->
+    <!-- Supabase SDK (מסד הנתונים והתמונות) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-        body { font-family: 'Rubik', sans-serif; }
+        body { 
+            font-family: 'Rubik', sans-serif; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+        
+        /* הסתרת פס הגלילה לטאבים בנייד אבל השארת היכולת לגלול */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* אנימציות למודלים (תצורת Bottom Sheet בנייד) */
+        .modal-enter {
+            animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.95) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
     </style>
 
     <script>
+        // טיפול בתמונות שבורות
         function handleImageLoadError(imgEl) {
             imgEl.onerror = null;
-            imgEl.src = "https://placehold.co/300x200/1e293b/ef4444?text=%F0%9F%94%92+Check+Image+Link";
+            imgEl.src = "https://placehold.co/300x200/1e293b/3b82f6?text=%F0%9F%94%92+No+Image";
             imgEl.title = "הטעינה נכשלה.";
         }
     </script>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased pb-20 md:pb-0">
 
     <!-- שורת סטטוס עליונה -->
-    <div class="bg-slate-900 border-b border-slate-800 text-xs py-2.5 px-4 sm:px-6">
-        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+    <div class="bg-slate-900 border-b border-slate-800 text-[10px] sm:text-xs py-2 px-4 sm:px-6">
+        <div class="max-w-7xl mx-auto flex justify-between items-center gap-2">
             <div class="flex items-center gap-2">
-                <span id="connection-indicator-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
-                <span id="connection-indicator-text" class="text-slate-400 font-medium">מתחבר ל-Supabase...</span>
+                <span id="connection-indicator-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse shadow-[0_0_8px_rgba(245,158,11,0.6)]"></span>
+                <span id="connection-indicator-text" class="text-slate-400 font-medium">מתחבר לענן...</span>
             </div>
-            <div class="flex items-center gap-4 text-slate-400">
-                <span>סטטוס חיבור: <strong class="text-emerald-400 font-mono text-[10px]" id="current-sheet-id-label">מחובר לענן מרכזי</strong></span>
+            <div class="flex items-center gap-2 text-slate-400">
+                <span class="hidden sm:inline">סטטוס:</span> <strong class="text-blue-400 font-mono text-[10px] bg-blue-500/10 px-2 py-0.5 rounded" id="current-sheet-id-label">מערכת חיה</strong>
             </div>
         </div>
     </div>
 
-    <!-- כותרת ראשית -->
-    <header class="bg-slate-900/60 border-b border-slate-800 py-5 px-4 sm:px-6 sticky top-0 z-40 backdrop-blur-md">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-             <div class="flex items-center gap-3">
-                <div class="bg-emerald-500 p-2.5 rounded-xl text-slate-950 shadow-lg shadow-emerald-500/20">
-                    <i class="fa-solid fa-warehouse text-xl"></i>
+    <!-- כותרת ראשית ולוגו -->
+    <header class="bg-slate-900/80 border-b border-slate-800 py-3 sm:py-4 px-4 sm:px-6 sticky top-0 z-40 backdrop-blur-xl">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+             <div class="flex items-center gap-3 sm:gap-4">
+                <div class="bg-white p-1 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.15)] border border-slate-700/50 flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 shrink-0">
+                    <img src="image_06da0c.png" alt="לוגו מרכז הובלה" class="h-full w-full object-contain" onerror="this.src='https://placehold.co/100x100/1e293b/3b82f6?text=LOGO'">
                 </div>
                 <div>
-                     <h1 class="text-xl font-black text-white tracking-tight">מלאי מחסן בזמן אמת</h1>
-                    <p class="text-slate-400 text-xs mt-0.5">סנכרון מיידי וענן תמונות מאובטח</p>
+                     <h1 class="text-lg sm:text-xl font-black text-white tracking-tight leading-tight">מלאי מרכז הובלה</h1>
+                    <p class="text-blue-400 text-[10px] sm:text-xs font-medium">ניהול ציוד מתקדם בזמן אמת</p>
                 </div>
             </div>
             
-             <div class="flex flex-wrap items-center gap-2">
-                <button id="admin-add-item-btn" onclick="toggleAddItemModal()" class="hidden bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition-all text-slate-950 font-bold px-4 py-2 rounded-xl flex items-center gap-2 text-xs shadow-md shadow-emerald-500/10">
-                    <i class="fa-solid fa-circle-plus"></i> הוסף פריט חדש
+             <div class="flex items-center gap-2">
+                <!-- כפתור הוספה (מחשב בלבד - במובייל יש FAB למטה) -->
+                <button id="admin-add-item-btn-desktop" onclick="toggleAddItemModal()" class="hidden md:flex bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all text-white font-bold px-4 py-2 rounded-xl items-center gap-2 text-xs shadow-lg shadow-blue-600/20 admin-action-col">
+                    <i class="fa-solid fa-circle-plus"></i> הוסף פריט
                 </button>
-                <button id="admin-login-btn" onclick="toggleAdminLoginModal()" class="bg-slate-800 hover:bg-slate-700 active:scale-95 transition-all text-white font-medium px-4 py-2 rounded-xl flex items-center gap-2 text-xs border border-slate-700">
-                    <i class="fa-solid fa-user-shield"></i> כניסת מנהל
+                
+                <button id="admin-login-btn" onclick="toggleAdminLoginModal()" class="bg-slate-800 hover:bg-slate-700 active:scale-95 transition-all text-white font-medium px-3 sm:px-4 py-2 rounded-xl flex items-center gap-2 text-xs border border-slate-700 shadow-sm">
+                    <i class="fa-solid fa-user-shield"></i> <span class="hidden sm:inline">ניהול</span>
                 </button>
-                <button id="admin-logout-btn" onclick="adminLogout()" class="hidden bg-rose-500/10 hover:bg-rose-500/20 active:scale-95 transition-all text-rose-400 font-medium px-4 py-2 rounded-xl flex items-center gap-2 text-xs border border-rose-500/30">
-                    <i class="fa-solid fa-right-from-bracket"></i> יציאה ממצב עריכה
+                <button id="admin-logout-btn" onclick="adminLogout()" class="hidden bg-rose-500/10 hover:bg-rose-500/20 active:scale-95 transition-all text-rose-400 font-medium px-3 sm:px-4 py-2 rounded-xl items-center gap-2 text-xs border border-rose-500/30 admin-action-col">
+                    <i class="fa-solid fa-right-from-bracket"></i> <span class="hidden sm:inline">יציאה</span>
                 </button>
-                <button onclick="fetchLiveSheetData()" class="bg-slate-800 hover:bg-slate-700 active:scale-95 transition-all text-white font-medium px-4 py-2 rounded-xl flex items-center gap-2 text-xs border border-slate-700">
-                    <i id="sync-icon" class="fa-solid fa-rotate"></i> רענן נתונים
-                </button>
-                <button onclick="copyToClipboardFormatted()" class="bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition-all text-slate-950 font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 text-xs shadow-md">
-                    <i class="fa-solid fa-copy"></i> העתק הכל לאקסל
+                <button onclick="fetchLiveSheetData()" class="bg-slate-800 hover:bg-slate-700 active:scale-95 transition-all text-white font-medium w-9 h-9 sm:w-auto sm:px-4 sm:py-2 rounded-xl flex items-center justify-center gap-2 text-xs border border-slate-700 shadow-sm">
+                    <i id="sync-icon" class="fa-solid fa-rotate"></i> <span class="hidden sm:inline">רענן</span>
                 </button>
             </div>
         </div>
@@ -78,204 +102,378 @@
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-4 gap-6">
         
-        <div class="lg:col-span-1 space-y-6">
-            <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl">
+        <!-- עמודת חיפוש וסטטיסטיקה -->
+        <div class="lg:col-span-1 space-y-4 sm:space-y-6">
+            <div class="bg-slate-900 border border-slate-800 p-4 sm:p-5 rounded-2xl shadow-xl">
                 <h3 class="font-bold text-sm mb-4 text-white flex items-center gap-2">
-                    <i class="fa-solid fa-filter text-emerald-400"></i> חיפוש וסטטיסטיקה
+                    <i class="fa-solid fa-magnifying-glass text-blue-400"></i> חיפוש חכם
                 </h3>
                 <div class="relative mb-4">
-                    <span class="absolute right-3 top-3.5 text-slate-500"><i class="fa-solid fa-magnifying-glass"></i></span>
                     <input type="text" id="searchInput" oninput="filterData()" placeholder="חפש פריט, מכולה..." 
-                           class="w-full pl-3 pr-10 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition">
+                           class="w-full pl-3 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all shadow-inner">
                 </div>
-                <div class="space-y-2.5 text-xs">
-                    <div class="p-3 bg-slate-950 rounded-xl border border-slate-800/80 flex items-center justify-between">
-                       <span class="text-slate-400">סה"כ פריטים במלאי:</span>
-                        <span id="totalItems" class="font-bold text-white text-sm">0</span>
+                <div class="grid grid-cols-2 lg:grid-cols-1 gap-2.5 text-xs">
+                    <div class="p-3 bg-slate-950 rounded-xl border border-slate-800/80 flex flex-col justify-center">
+                       <span class="text-slate-500 text-[10px] font-medium mb-0.5">סה"כ פריטים במלאי</span>
+                        <span id="totalItems" class="font-black text-white text-base">0</span>
                     </div>
-                    <div class="p-3 bg-slate-950 rounded-xl border border-slate-800/80 flex items-center justify-between">
-                         <span class="text-slate-400">פריטים מסוננים:</span>
-                        <span id="filteredItems" class="font-bold text-emerald-400 text-sm">0</span>
+                    <div class="p-3 bg-slate-950 rounded-xl border border-slate-800/80 flex flex-col justify-center">
+                         <span class="text-slate-500 text-[10px] font-medium mb-0.5">תוצאות חיפוש</span>
+                        <span id="filteredItems" class="font-black text-amber-400 text-base">0</span>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- עמודת תוכן מרכזית (קטגוריות ותצוגה) -->
         <div class="lg:col-span-3 space-y-4">
-            <div class="bg-slate-900 border border-slate-800 p-3 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
-                <div class="flex flex-wrap gap-1 w-full sm:w-auto">
-                    <button onclick="selectCategory('all')" id="tab-all" class="tab-btn px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-emerald-500 text-slate-950 shadow-md transition-all">הכל</button>
-                    <button onclick="selectCategory('תשורות')" id="tab-תשורות" class="tab-btn px-3.5 py-1.5 text-xs font-semibold rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all">תשורות</button>
-                    <button onclick="selectCategory('חשמל')" id="tab-חשמל" class="tab-btn px-3.5 py-1.5 text-xs font-semibold rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all">חשמל</button>
-                    <button onclick="selectCategory('ספר')" id="tab-ספר" class="tab-btn px-3.5 py-1.5 text-xs font-semibold rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all">ספרים</button>
-                    <button onclick="selectCategory('ערכת נהג')" id="tab-ערכת נהג" class="tab-btn px-3.5 py-1.5 text-xs font-semibold rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all">ערכת נהג</button>
+            <!-- סרגל כלים: קטגוריות ותצוגה -->
+            <div class="bg-slate-900 border border-slate-800 p-2 sm:p-3 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xl">
+                <!-- קטגוריות נגללות בנייד -->
+                <div class="w-full sm:w-auto overflow-x-auto hide-scrollbar pb-1 sm:pb-0">
+                    <div class="flex gap-1.5 min-w-max px-1">
+                        <button onclick="selectCategory('all')" id="tab-all" class="tab-btn px-4 py-2 text-xs font-semibold rounded-xl bg-blue-600 text-white shadow-md transition-all active:scale-95">הכל</button>
+                        <button onclick="selectCategory('תשורות')" id="tab-תשורות" class="tab-btn px-4 py-2 text-xs font-medium rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all active:scale-95">תשורות</button>
+                        <button onclick="selectCategory('חשמל')" id="tab-חשמל" class="tab-btn px-4 py-2 text-xs font-medium rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all active:scale-95">חשמל</button>
+                        <button onclick="selectCategory('ספר')" id="tab-ספר" class="tab-btn px-4 py-2 text-xs font-medium rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all active:scale-95">ספרים</button>
+                        <button onclick="selectCategory('ערכת נהג')" id="tab-ערכת נהג" class="tab-btn px-4 py-2 text-xs font-medium rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all active:scale-95">ערכת נהג</button>
+                    </div>
                 </div>
-                <div class="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center gap-1 shrink-0">
-                    <button onclick="switchView('table')" id="view-btn-table" class="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-slate-800 text-white transition-all flex items-center gap-1.5"><i class="fa-solid fa-list"></i> טבלה</button>
-                    <button onclick="switchView('grid')" id="view-btn-grid" class="px-3 py-1.5 rounded-lg text-[11px] font-bold text-slate-500 hover:text-slate-200 transition-all flex items-center gap-1.5"><i class="fa-solid fa-grip"></i> גלריה</button>
+                <!-- מתג תצוגה -->
+                <div class="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center gap-1 shrink-0 w-full sm:w-auto justify-center">
+                    <button onclick="switchView('grid')" id="view-btn-grid" class="flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-white transition-all flex items-center justify-center gap-1.5"><i class="fa-solid fa-grip"></i> גלריה</button>
+                    <button onclick="switchView('table')" id="view-btn-table" class="flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-200 transition-all flex items-center justify-center gap-1.5"><i class="fa-solid fa-list"></i> טבלה</button>
                 </div>
             </div>
 
-            <div id="table-loader" class="py-24 text-center">
-                <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-emerald-500 border-t-transparent mb-3"></div>
-                <p class="text-slate-400 text-xs">טוען נתונים מהענן...</p>
+            <!-- לאודר -->
+            <div id="table-loader" class="py-24 flex flex-col items-center justify-center">
+                <div class="relative w-12 h-12">
+                    <div class="absolute inset-0 rounded-full border-t-2 border-blue-500 animate-spin"></div>
+                    <div class="absolute inset-2 rounded-full border-r-2 border-amber-500 animate-spin" style="animation-direction: reverse; animation-duration: 0.7s;"></div>
+                </div>
+                <p class="text-slate-400 text-xs mt-4 font-medium tracking-wide">טוען נתונים מהענן...</p>
             </div>
 
+            <!-- תצוגת טבלה -->
             <div id="table-view-container" class="hidden bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
-                <div class="overflow-x-auto max-h-[600px]">
-                    <table class="w-full text-right border-collapse text-xs">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right border-collapse text-xs min-w-[650px]">
                         <thead>
-                            <tr class="bg-slate-950 text-slate-300 font-bold border-b border-slate-800 sticky top-0 z-10">
-                                <th class="py-3 px-4 text-center w-16">שורה</th>
-                                <th class="py-3 px-4 w-28 text-right">מכולה</th>
-                                <th class="py-3 px-4 text-right">שם פריט</th>
-                                <th class="py-3 px-4 w-24 text-center">כמות</th>
-                                <th class="py-3 px-4 w-32 text-center">תמונה במחסן</th>
-                                <th class="py-3 px-4 w-28 text-center admin-action-col hidden">פעולות</th>
+                            <tr class="bg-slate-950/50 text-slate-400 font-medium border-b border-slate-800">
+                                <th class="py-3 px-4 w-16 text-center">ID</th>
+                                <th class="py-3 px-4 w-24">קטגוריה</th>
+                                <th class="py-3 px-4">שם פריט</th>
+                                <th class="py-3 px-4 w-28 text-center">כמות</th>
+                                <th class="py-3 px-4 w-28 text-center">תמונה</th>
+                                <th class="py-3 px-4 w-32 text-center admin-action-col hidden">פעולות</th>
                             </tr>
                         </thead>
-                        <tbody id="inventoryTableBody" class="divide-y divide-slate-800/50 text-right"></tbody>
+                        <tbody id="inventoryTableBody" class="divide-y divide-slate-800/50"></tbody>
                     </table>
                 </div>
             </div>
 
-            <div id="grid-view-container" class="hidden grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+            <!-- תצוגת גלריה -->
+            <div id="grid-view-container" class="hidden grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-5"></div>
         </div>
     </main>
 
+    <!-- קרדיט מפתח ב-Footer -->
+    <footer class="w-full text-center py-6 mt-auto text-slate-500 text-[10px] sm:text-xs font-medium z-10 relative">
+        <p class="flex items-center justify-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
+            <i class="fa-solid fa-laptop-code text-blue-500/70"></i>
+            פותח ואופיין ע"י <span class="text-slate-300 font-bold tracking-wide">סרן במיל' אלעד שושן</span>
+        </p>
+    </footer>
+
+    <!-- כפתור הוספה צף למובייל (FAB) -->
+    <button id="mobile-add-fab" onclick="toggleAddItemModal()" class="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 hover:bg-blue-500 rounded-full shadow-[0_4px_20px_rgba(37,99,235,0.4)] flex items-center justify-center text-white text-xl z-30 transition-transform active:scale-90 md:hidden admin-action-col hidden">
+        <i class="fa-solid fa-plus"></i>
+    </button>
+
     <!-- מודל התחברות -->
-    <div id="admin-login-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-sm shadow-2xl relative">
-            <button onclick="toggleAdminLoginModal()" class="absolute left-4 top-4 text-slate-500 hover:text-slate-200"><i class="fa-solid fa-xmark text-base"></i></button>
-            <h3 class="font-bold text-base text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-user-shield text-emerald-400"></i> כניסת מנהל</h3>
-            <div class="space-y-3 text-xs">
-                <input type="password" id="adminLoginPasswordField" placeholder="סיסמת מנהל" onkeydown="if(event.key==='Enter') attemptAdminLogin()" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-white">
-                <button onclick="attemptAdminLogin()" class="w-full bg-emerald-500 hover:bg-emerald-600 transition text-slate-950 font-bold py-2.5 rounded-lg text-xs">כניסה</button>
+    <div id="admin-login-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center sm:p-4">
+        <div class="bg-slate-900 sm:border border-slate-800 p-6 sm:rounded-2xl rounded-t-3xl w-full max-w-sm shadow-2xl relative modal-enter pb-10 sm:pb-6">
+            <div class="w-12 h-1.5 bg-slate-800 rounded-full mx-auto mb-6 sm:hidden"></div>
+            <button onclick="toggleAdminLoginModal()" class="absolute left-6 top-6 text-slate-500 hover:text-slate-200 bg-slate-800/50 w-8 h-8 rounded-full flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="font-black text-lg text-white mb-6 flex items-center gap-2"><div class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center"><i class="fa-solid fa-user-shield"></i></div> כניסת מנהל</h3>
+            <div class="space-y-4 text-sm">
+                <div>
+                    <input type="password" id="adminLoginPasswordField" placeholder="סיסמת מנהל" onkeydown="if(event.key==='Enter') attemptAdminLogin()" class="w-full px-4 py-3.5 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-slate-600 transition-all text-center tracking-widest text-lg">
+                </div>
+                <button onclick="attemptAdminLogin()" class="w-full bg-blue-600 hover:bg-blue-500 transition-colors text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 active:scale-95">
+                    התחבר למערכת <i class="fa-solid fa-arrow-left mt-0.5"></i>
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- מודל הוספת פריט -->
-    <div id="add-item-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-md shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            <button onclick="toggleAddItemModal()" class="absolute left-4 top-4 text-slate-500 hover:text-slate-200"><i class="fa-solid fa-xmark text-base"></i></button>
-            <h3 class="font-bold text-base text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-circle-plus text-emerald-400"></i> הוספת פריט חדש למלאי</h3>
-            <div class="space-y-4 text-xs">
+    <!-- מודל עריכת פרטי פריט -->
+    <div id="edit-data-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center sm:p-4">
+        <div class="bg-slate-900 sm:border border-slate-800 p-6 sm:rounded-2xl rounded-t-3xl w-full max-w-md shadow-2xl relative modal-enter pb-10 sm:pb-6">
+            <div class="w-12 h-1.5 bg-slate-800 rounded-full mx-auto mb-4 sm:hidden"></div>
+            <button onclick="toggleEditDataModal()" class="absolute left-6 top-6 text-slate-500 hover:text-slate-200 bg-slate-800/50 w-8 h-8 rounded-full flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="font-black text-lg text-white mb-6 flex items-center gap-2"><div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center"><i class="fa-solid fa-pen"></i></div> עריכת פרטי פריט</h3>
+            <div class="space-y-4 text-sm">
                 <div>
-                    <label class="block font-bold text-slate-400 mb-1">קטגוריה:</label>
-                    <select id="newItemCategory" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white"><option value="תשורות">תשורות</option><option value="חשמל">חשמל</option><option value="ספר">ספרים</option><option value="ערכת נהג">ערכת נהג</option></select>
-                </div>
-                <div>
-                    <label class="block font-bold text-slate-400 mb-1">שם הפריט:</label>
-                    <input type="text" id="newItemName" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white">
-                </div>
-                <div>
-                    <label class="block font-bold text-slate-400 mb-1">כמות:</label>
-                    <input type="text" id="newItemQty" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white">
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">קטגוריה</label>
+                    <select id="editDataCategory" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-amber-500 focus:outline-none appearance-none">
+                        <option value="תשורות">תשורות</option>
+                        <option value="חשמל">חשמל</option>
+                        <option value="ספר">ספרים</option>
+                        <option value="ערכת נהג">ערכת נהג</option>
+                    </select>
                 </div>
                 <div>
-                    <label class="block font-bold text-slate-400 mb-1">בחירת תמונה:</label>
-                    <div class="flex gap-2 mb-2 bg-slate-950 p-1 rounded-lg border border-slate-800">
-                        <button onclick="switchImageSource('upload')" id="img-src-upload-btn" class="w-1/2 py-1.5 rounded-md text-[10px] font-bold bg-slate-800 text-white transition-all">העלאת קובץ</button>
-                        <button onclick="switchImageSource('link')" id="img-src-link-btn" class="w-1/2 py-1.5 rounded-md text-[10px] font-bold text-slate-400 hover:text-white transition-all">הדבקת קישור</button>
-                    </div>
-                    <div id="image-source-upload" class="space-y-2">
-                        <label class="flex flex-col items-center justify-center w-full h-24 border-2 border-slate-800 border-dashed rounded-lg cursor-pointer bg-slate-950 hover:bg-slate-800/30">
-                            <i class="fa-solid fa-cloud-arrow-up text-slate-500 text-lg mb-1"></i>
-                            <p class="text-[10px] text-slate-400" id="file-upload-label">לחץ לבחירת תמונה</p>
-                            <input type="file" id="newItemFile" accept="image/*" class="hidden" onchange="handleFileSelected(this)">
-                        </label>
-                    </div>
-                    <div id="image-source-link" class="hidden">
-                        <input type="text" id="newItemImageUrl" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white" placeholder="https://...">
-                    </div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">שם הפריט</label>
+                    <input type="text" id="editDataName" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-amber-500 focus:outline-none">
                 </div>
-                <button id="add-item-submit-btn" onclick="submitNewItem()" class="w-full bg-emerald-500 hover:bg-emerald-600 transition text-slate-950 font-bold py-3 rounded-xl text-xs flex justify-center gap-2"><i class="fa-solid fa-save"></i> שמור פריט</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- מודל עדכון תמונה ספציפית -->
-    <div id="edit-image-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-md shadow-2xl relative">
-            <button onclick="toggleEditImageModal()" class="absolute left-4 top-4 text-slate-500 hover:text-slate-200"><i class="fa-solid fa-xmark text-base"></i></button>
-            <h3 class="font-bold text-base text-white mb-2 flex items-center gap-2"><i class="fa-solid fa-image text-emerald-400"></i> עדכון תמונה לשורה זו</h3>
-            <p id="editImageItemName" class="text-xs text-slate-400 mb-4 font-semibold"></p>
-            <div class="space-y-4 text-xs">
-                <div class="flex gap-2 bg-slate-950 p-1 rounded-lg border border-slate-800">
-                    <button onclick="switchEditImageSource('upload')" id="edit-img-src-upload-btn" class="w-1/2 py-1.5 rounded-md text-[10px] font-bold bg-slate-800 text-white transition-all">העלאת קובץ</button>
-                    <button onclick="switchEditImageSource('link')" id="edit-img-src-link-btn" class="w-1/2 py-1.5 rounded-md text-[10px] font-bold text-slate-400 hover:text-white transition-all">הדבקת קישור</button>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">כמות נוכחית</label>
+                    <input type="number" id="editDataQty" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white font-bold text-amber-400 focus:ring-2 focus:ring-amber-500 focus:outline-none text-center">
                 </div>
-                <div id="edit-image-source-upload" class="space-y-2">
-                    <label class="flex flex-col items-center justify-center w-full h-24 border-2 border-slate-800 border-dashed rounded-lg cursor-pointer bg-slate-950 hover:bg-slate-800/30">
-                        <i class="fa-solid fa-cloud-arrow-up text-slate-500 text-lg mb-1"></i>
-                        <p class="text-[10px] text-slate-400" id="edit-file-upload-label">לחץ לבחירת תמונה</p>
-                        <input type="file" id="editItemFile" accept="image/*" class="hidden" onchange="handleFileSelected(this)">
-                    </label>
+                <div class="pt-2">
+                    <button id="edit-data-submit-btn" onclick="submitEditData()" class="w-full bg-amber-500 hover:bg-amber-400 transition-colors text-slate-950 font-black py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 active:scale-95">
+                        <i class="fa-solid fa-check"></i> עדכן פריט
+                    </button>
                 </div>
-                <div id="edit-image-source-link" class="hidden">
-                    <input type="text" id="editItemImageUrl" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white" placeholder="https://...">
-                </div>
-                <button id="edit-image-submit-btn" onclick="submitEditImage()" class="w-full bg-emerald-500 hover:bg-emerald-600 transition text-slate-950 font-bold py-3 rounded-xl text-xs flex justify-center gap-2"><i class="fa-solid fa-cloud-arrow-up"></i> העלה ועדכן לשורה זו</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- מודל מחיקה -->
-    <div id="delete-confirm-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-sm shadow-2xl relative text-right">
-            <h3 class="font-bold text-base text-white mb-2 flex items-center gap-2 text-rose-500"><i class="fa-solid fa-triangle-exclamation"></i> אישור מחיקה</h3>
-            <p id="deleteConfirmMessage" class="text-xs text-slate-300 leading-relaxed mb-6"></p>
-            <div class="flex gap-2 text-xs">
-                <button onclick="executeDeleteRow()" class="w-1/2 bg-rose-600 hover:bg-rose-700 transition text-white font-bold py-2.5 rounded-lg flex items-center justify-center gap-1.5"><i class="fa-solid fa-trash-can"></i> כן, מחק</button>
-                <button onclick="toggleDeleteConfirmModal()" class="w-1/2 bg-slate-800 hover:bg-slate-700 transition text-slate-300 font-bold py-2.5 rounded-lg">ביטול</button>
             </div>
         </div>
     </div>
 
     <!-- מודל זום -->
-    <div id="zoom-modal" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4" onclick="closeZoomModal()">
-        <div class="relative max-w-3xl max-h-[85vh] flex flex-col items-center" onclick="event.stopPropagation()">
-            <button onclick="closeZoomModal()" class="absolute -top-10 left-0 text-white hover:text-emerald-400 transition flex items-center gap-1 text-xs font-bold"><i class="fa-solid fa-xmark text-sm"></i> סגור חלון</button>
-            <img id="zoom-image-el" src="" alt="זום פריט" class="max-w-full max-h-[75vh] object-contain rounded-2xl border border-slate-800 shadow-2xl" onerror="handleImageLoadError(this)">
-            <h3 id="zoom-title-el" class="text-white font-bold mt-4 text-base">שם פריט</h3>
-            <p id="zoom-qty-el" class="text-emerald-400 text-xs mt-1">כמות: 0</p>
+    <div id="zoom-modal" class="hidden fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-2 sm:p-4" onclick="closeZoomModal()">
+        <div class="relative w-full max-w-4xl max-h-[90vh] flex flex-col items-center justify-center" onclick="event.stopPropagation()">
+            <button onclick="closeZoomModal()" class="absolute -top-12 sm:-top-8 right-0 text-white bg-slate-800/50 hover:bg-slate-700 w-10 h-10 rounded-full transition-colors flex items-center justify-center backdrop-blur text-lg"><i class="fa-solid fa-xmark"></i></button>
+            <img id="zoom-image-el" src="" alt="זום פריט" class="max-w-full max-h-[70vh] object-contain rounded-xl shadow-2xl" onerror="handleImageLoadError(this)">
+            <div class="mt-4 bg-slate-900/80 backdrop-blur border border-slate-800 px-6 py-3 rounded-2xl text-center">
+                <h3 id="zoom-title-el" class="text-white font-black text-lg sm:text-xl">שם פריט</h3>
+                <p id="zoom-qty-el" class="text-blue-400 text-sm mt-0.5 font-bold bg-blue-500/10 inline-block px-3 py-1 rounded-lg">כמות: 0</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- מודל הוספת פריט חדש -->
+    <div id="add-item-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center sm:p-4">
+        <div class="bg-slate-900 sm:border border-slate-800 p-6 sm:rounded-2xl rounded-t-3xl w-full max-w-md shadow-2xl relative max-h-[90vh] overflow-y-auto modal-enter hide-scrollbar pb-10 sm:pb-6">
+            <div class="w-12 h-1.5 bg-slate-800 rounded-full mx-auto mb-4 sm:hidden"></div>
+            <button onclick="toggleAddItemModal()" class="absolute left-6 top-6 text-slate-500 hover:text-slate-200 bg-slate-800/50 w-8 h-8 rounded-full flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="font-black text-lg text-white mb-6 flex items-center gap-2"><div class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center"><i class="fa-solid fa-plus"></i></div> הוספת פריט חדש</h3>
+            <div class="space-y-5 text-sm">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1.5">קטגוריה</label>
+                    <select id="newItemCategory" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none">
+                        <option value="תשורות">תשורות</option><option value="חשמל">חשמל</option><option value="ספר">ספרים</option><option value="ערכת נהג">ערכת נהג</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1.5">שם הפריט</label>
+                    <input type="text" id="newItemName" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:outline-none placeholder-slate-600" placeholder="לדוגמה: ערכת קפה מלאה">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1.5">כמות במלאי</label>
+                    <input type="number" id="newItemQty" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="0">
+                </div>
+                
+                <!-- ממשק תמונה מותאם לנייד -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-2">תמונת הפריט</label>
+                    <div class="grid grid-cols-2 gap-3 mb-2">
+                        <button onclick="openDeviceCamera('newItemFile')" class="py-3 px-2 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-blue-400 flex flex-col items-center justify-center gap-1 transition-colors active:scale-95">
+                            <i class="fa-solid fa-camera text-xl mb-1"></i>
+                            <span class="text-[11px] font-bold">צלם עכשיו</span>
+                        </button>
+                        <button onclick="openDeviceGallery('newItemFile')" class="py-3 px-2 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 flex flex-col items-center justify-center gap-1 transition-colors active:scale-95">
+                            <i class="fa-solid fa-images text-xl mb-1"></i>
+                            <span class="text-[11px] font-bold">בחר מגלריה</span>
+                        </button>
+                    </div>
+                    
+                    <input type="file" id="newItemFile" accept="image/*" class="hidden" onchange="handleFileSelected(this, 'add-file-name')">
+                    
+                    <div id="add-file-name-container" class="hidden mt-2 p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl flex justify-between items-center">
+                        <div class="flex items-center gap-2 overflow-hidden">
+                            <i class="fa-solid fa-image text-blue-400"></i>
+                            <span id="add-file-name" class="text-xs text-blue-100 truncate">תמונה.jpg</span>
+                        </div>
+                        <button onclick="clearSelectedFile('newItemFile', 'add-file-name-container')" class="text-slate-400 hover:text-rose-400 p-1"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <button id="add-item-submit-btn" onclick="submitNewItem()" class="w-full bg-blue-600 hover:bg-blue-500 transition-colors text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 active:scale-95">
+                        <i class="fa-solid fa-check"></i> שמור פריט
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- מודל התראת כפילות פריט -->
+    <div id="duplicate-alert-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl w-full max-w-sm shadow-2xl relative text-center">
+            <div class="w-16 h-16 rounded-full bg-amber-500/20 text-amber-500 mx-auto flex items-center justify-center text-3xl mb-4">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 class="font-black text-lg text-white mb-2">רגע! מצאנו פריט דומה במחסן</h3>
+            <p class="text-xs text-slate-400 mb-6 leading-relaxed">נראה שהפריט שאתה מנסה להוסיף כבר קיים במערכת. האם תרצה לחבר את הכמות החדשה לפריט הקיים?</p>
+            
+            <div class="bg-slate-950 rounded-xl border border-slate-800 p-4 mb-6 text-right">
+                <p class="text-xs text-slate-500 mb-1">מצב הפריט הקיים במחסן:</p>
+                <p class="font-bold text-white text-sm" id="dup-item-name">שם הפריט</p>
+                <div class="flex justify-between items-center mt-3 pt-3 border-t border-slate-800">
+                    <span class="text-xs text-slate-400" id="dup-item-cat">קטגוריה</span>
+                    <span class="bg-amber-500/10 text-amber-400 px-3 py-1 rounded-lg text-xs font-bold border border-amber-500/20" id="dup-item-qty">כמות: 0</span>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <button id="dup-update-btn" onclick="updateExistingDuplicate()" class="w-full bg-amber-500 hover:bg-amber-400 transition text-slate-950 font-black py-3.5 rounded-xl shadow-lg shadow-amber-500/20 active:scale-95">
+                    חבר לכמות הקיימת במחסן
+                </button>
+                <button onclick="proceedWithNewItem()" class="w-full bg-slate-800 hover:bg-slate-700 transition text-slate-300 font-bold py-3.5 rounded-xl active:scale-95 border border-slate-700">
+                    לא, הוסף כשורה חדשה
+                </button>
+                <button onclick="closeDuplicateModal()" class="w-full text-slate-500 hover:text-slate-300 transition font-medium py-2 text-xs">
+                    ביטול חזרה למסך הקודם
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- מודל עדכון תמונה ספציפית -->
+    <div id="edit-image-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center sm:p-4">
+        <div class="bg-slate-900 sm:border border-slate-800 p-6 sm:rounded-2xl rounded-t-3xl w-full max-w-md shadow-2xl relative modal-enter pb-10 sm:pb-6">
+            <div class="w-12 h-1.5 bg-slate-800 rounded-full mx-auto mb-4 sm:hidden"></div>
+            <button onclick="toggleEditImageModal()" class="absolute left-6 top-6 text-slate-500 hover:text-slate-200 bg-slate-800/50 w-8 h-8 rounded-full flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="font-black text-lg text-white mb-2 flex items-center gap-2"><div class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center"><i class="fa-solid fa-camera"></i></div> עדכון תמונה</h3>
+            <p id="editImageItemName" class="text-xs text-slate-400 mb-6 font-medium bg-slate-950 p-2 rounded-lg border border-slate-800 truncate"></p>
+            
+            <div class="space-y-4 text-sm">
+                <!-- ממשק תמונה מותאם לנייד -->
+                <div class="grid grid-cols-2 gap-3 mb-2">
+                    <button onclick="openDeviceCamera('editItemFile')" class="py-4 px-2 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-blue-400 flex flex-col items-center justify-center gap-2 transition-colors active:scale-95">
+                        <i class="fa-solid fa-camera text-2xl mb-1"></i>
+                        <span class="text-[11px] font-bold">צלם עכשיו</span>
+                    </button>
+                    <button onclick="openDeviceGallery('editItemFile')" class="py-4 px-2 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 flex flex-col items-center justify-center gap-2 transition-colors active:scale-95">
+                        <i class="fa-solid fa-images text-2xl mb-1"></i>
+                        <span class="text-[11px] font-bold">בחר מגלריה</span>
+                    </button>
+                </div>
+                
+                <input type="file" id="editItemFile" accept="image/*" class="hidden" onchange="handleFileSelected(this, 'edit-file-name')">
+                
+                <div id="edit-file-name-container" class="hidden p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl flex justify-between items-center">
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        <i class="fa-solid fa-image text-blue-400"></i>
+                        <span id="edit-file-name" class="text-xs text-blue-100 truncate">תמונה.jpg</span>
+                    </div>
+                    <button onclick="clearSelectedFile('editItemFile', 'edit-file-name-container')" class="text-slate-400 hover:text-rose-400 p-1"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+
+                <div class="pt-2 border-t border-slate-800/80 mt-2">
+                     <p class="text-[10px] text-slate-500 text-center mb-3">ניתן להדביק קישור חיצוני אם התמונה כבר בענן</p>
+                    <input type="text" id="editItemImageUrl" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="https://...">
+                </div>
+
+                <div class="pt-2">
+                    <button id="edit-image-submit-btn" onclick="submitEditImage()" class="w-full bg-blue-600 hover:bg-blue-500 transition-colors text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 active:scale-95">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> שמור תמונה
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- מודל מחיקה -->
+    <div id="delete-confirm-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center sm:p-4">
+        <div class="bg-slate-900 sm:border border-slate-800 p-6 sm:rounded-2xl rounded-t-3xl w-full max-w-sm shadow-2xl relative text-right modal-enter pb-10 sm:pb-6">
+            <h3 class="font-black text-lg text-white mb-2 flex items-center gap-2 text-rose-500"><i class="fa-solid fa-triangle-exclamation"></i> אזהרת מחיקה</h3>
+            <p id="deleteConfirmMessage" class="text-sm text-slate-300 leading-relaxed mb-8 mt-4 bg-rose-500/10 p-4 rounded-xl border border-rose-500/20"></p>
+            <div class="flex gap-3 text-sm">
+                <button onclick="executeDeleteRow()" class="flex-1 bg-rose-600 hover:bg-rose-500 transition-colors text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 active:scale-95"><i class="fa-solid fa-trash-can"></i> מחק לצמיתות</button>
+                <button onclick="toggleDeleteConfirmModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 transition-colors text-slate-300 font-bold py-3.5 rounded-xl active:scale-95 border border-slate-700">ביטול</button>
+            </div>
         </div>
     </div>
 
     <!-- הודעות מוקפצות -->
-    <div id="toast" class="fixed bottom-6 left-6 bg-slate-900 text-white text-xs font-semibold py-3 px-5 rounded-xl shadow-2xl border border-slate-800 flex items-center gap-2 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none z-50">
-        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400"></i>
-        <span id="toast-message"></span>
+    <div id="toast" class="fixed bottom-24 sm:bottom-6 left-1/2 -translate-x-1/2 sm:left-6 sm:translate-x-0 w-[90%] sm:w-auto max-w-sm bg-slate-800 text-white text-sm font-semibold py-3.5 px-5 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-slate-700 flex items-center gap-3 transform translate-y-24 opacity-0 transition-all duration-400 pointer-events-none z-[60]">
+        <div id="toast-icon-bg" class="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
+            <i id="toast-icon" class="fa-solid fa-circle-check text-blue-400 text-lg"></i>
+        </div>
+        <span id="toast-message" class="leading-tight"></span>
     </div>
 
     <script>
-        // אתחול Supabase תחת שם ייחודי כדי למנוע התנגשויות
+        // אתחול Supabase
         const SUPABASE_URL = "https://gumrukucfdbwibmjvqlb.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd1bXJ1a3VjZmRid2libWp2cWxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwODc3NDYsImV4cCI6MjA5ODY2Mzc0Nn0.BTyxqd_WbGTaFY0qqm5Ck23fu1pNIahTww9gXoeFbIE";
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const ADMIN_PASSWORD_HASH = "8714441"; 
 
+        // משתנים גלובליים
         let isAdmin = sessionStorage.getItem('mhasan_is_admin') === 'true';
         let inventoryData = [];
         let selectedCategory = 'all';
-        let currentViewMode = 'table';
+        let currentViewMode = window.innerWidth < 640 ? 'grid' : 'table';
         
-        let currentImageSource = 'upload';
         let selectedFile = null;
-
-        let currentEditImageSource = 'upload';
         let selectedEditFile = null;
+        
         let activeEditRowId = null;
         let activeDeleteRowId = null;
+        let activeEditDataId = null;
+        
+        let pendingNewItem = null;
+        let existingDuplicateItem = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             updateAdminUI();
+            switchView(currentViewMode); // תצוגה ברירת מחדל לפי מסך
             fetchLiveSheetData();
         });
 
-        // פונקציית עזר להעלאת תמונה ל-Storage של Supabase
+        // --- ממשק מצלמה / גלריה מותאם מובייל ---
+        function openDeviceCamera(inputId) {
+            const input = document.getElementById(inputId);
+            input.setAttribute('capture', 'environment'); // מאלץ פתיחת מצלמה במובייל
+            input.click();
+        }
+
+        function openDeviceGallery(inputId) {
+            const input = document.getElementById(inputId);
+            input.removeAttribute('capture');
+            input.click();
+        }
+
+        function handleFileSelected(input, textElId) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                document.getElementById(textElId).textContent = file.name;
+                document.getElementById(textElId + '-container').classList.remove('hidden');
+                
+                if (input.id === 'newItemFile') {
+                    selectedFile = file;
+                    document.getElementById('newItemImageUrl').value = '';
+                } else {
+                    selectedEditFile = file;
+                    document.getElementById('editItemImageUrl').value = '';
+                }
+            }
+        }
+
+        function clearSelectedFile(inputId, containerId) {
+            document.getElementById(inputId).value = '';
+            document.getElementById(containerId).classList.add('hidden');
+            if (inputId === 'newItemFile') selectedFile = null;
+            else selectedEditFile = null;
+        }
+
+        // --- תקשורת Supabase ---
         async function uploadImageToSupabase(file) {
             const fileExt = file.name.split('.').pop();
             const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
@@ -286,7 +484,7 @@
 
             if (error) {
                 console.error("Storage upload error:", error);
-                throw new Error("שגיאה בהעלאת התמונה: התיקייה item-images לא נמצאה או שאין הרשאות");
+                throw new Error("שגיאה בהעלאת התמונה לענן הנתונים");
             }
 
             const { data: publicUrlData } = supabaseClient.storage
@@ -318,13 +516,12 @@
                     image: item.image_url || ''
                 }));
 
-                indicatorDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
-                indicatorText.textContent = "מחובר ל-Supabase!";
-                showToast("סונכרן מהענן בהצלחה!");
+                indicatorDot.className = "w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]";
+                indicatorText.textContent = "מחובר ל-Supabase";
             } catch (error) {
                 console.error(error);
                 indicatorDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse";
-                indicatorText.textContent = "שגיאה בחיבור.";
+                indicatorText.textContent = "שגיאה בחיבור";
                 showToast("לא מצליח לגשת למסד הנתונים", true);
             } finally {
                 if (syncIcon) syncIcon.classList.remove('animate-spin');
@@ -342,26 +539,30 @@
             const tbody = document.getElementById('inventoryTableBody');
             tbody.innerHTML = '';
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="py-16 text-center text-slate-500">לא נמצאו פריטים</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="py-16 text-center text-slate-500 font-medium">לא נמצאו פריטים</td></tr>`;
                 return;
             }
             data.forEach(item => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-800/30 transition border-b border-slate-800/50";
-                let imageColContent = !item.image ? `<span class="text-slate-600 italic">אין תמונה</span>` : `<div class="flex justify-center"><img src="${item.image}" alt="${item.name}" class="h-10 w-16 object-cover rounded-lg border border-slate-700 shadow-md hover:scale-110 transition cursor-zoom-in" onclick="openZoomModal('${item.image}', '${item.name}', '${item.quantity}')" onerror="handleImageLoadError(this)"></div>`;
-                const qtyContent = isAdmin ? `<div class="flex items-center justify-center gap-1"><button onclick="updateQuantity(${item.id}, Number(findItemById(${item.id}).quantity) - 1)" class="w-6 h-6 rounded-md bg-slate-800 text-slate-300 hover:bg-rose-500/20 hover:text-rose-400 flex items-center justify-center"><i class="fa-solid fa-minus text-[10px]"></i></button><input type="text" value="${item.quantity}" onchange="updateQuantity(${item.id}, this.value)" class="w-14 text-center bg-slate-950 border border-slate-700 rounded-md py-1 text-emerald-400 font-bold text-sm focus:outline-none"><button onclick="updateQuantity(${item.id}, Number(findItemById(${item.id}).quantity) + 1)" class="w-6 h-6 rounded-md bg-slate-800 text-slate-300 hover:bg-emerald-500/20 hover:text-emerald-400 flex items-center justify-center"><i class="fa-solid fa-plus text-[10px]"></i></button></div>` : `${item.quantity}`;
-                const actionButtons = isAdmin ? `<div class="flex items-center justify-center gap-2"><button onclick="openEditImageModal(${item.id}, '${item.name.replace(/'/g, "\\'")}')" title="עדכן תמונה לשורה זו" class="w-8 h-8 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center justify-center active:scale-95"><i class="fa-solid fa-camera"></i></button><button onclick="confirmDeleteRow(${item.id}, '${item.name.replace(/'/g, "\\'")}')" title="מחק פריט" class="w-8 h-8 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center active:scale-95"><i class="fa-solid fa-trash-can"></i></button></div>` : ``;
-                tr.innerHTML = `<td class="py-3 px-4 text-center font-medium text-slate-500 text-xs">${item.id}</td><td class="py-3 px-4">${getCategoryBadge(item.category)}</td><td class="py-3 px-4 font-medium text-white text-right">${item.name}</td><td class="py-3 px-4 text-center font-bold text-emerald-400 text-sm">${qtyContent}</td><td class="py-3 px-4 text-center">${imageColContent}</td><td class="py-3 px-4 text-center admin-action-col ${isAdmin ? '' : 'hidden'}">${actionButtons}</td>`;
+                
+                let imageColContent = !item.image ? `<span class="text-slate-600 italic text-[11px]">אין תמונה</span>` : `<div class="flex justify-center"><img src="${item.image}" alt="${item.name.replace(/'/g, "\\'")}" class="h-10 w-16 object-cover rounded-lg border border-slate-700 shadow-md hover:scale-110 transition cursor-zoom-in" onclick="openZoomModal('${item.image}', '${item.name.replace(/'/g, "\\'")}', '${item.quantity}')" onerror="handleImageLoadError(this)"></div>`;
+                
+                const qtyContent = isAdmin ? `<div class="flex items-center justify-center gap-1"><button onclick="updateQuantity(${item.id}, Number(findItemById(${item.id}).quantity) - 1)" class="w-6 h-6 rounded-md bg-slate-800 text-slate-300 hover:bg-rose-500/20 hover:text-rose-400 flex items-center justify-center transition-colors"><i class="fa-solid fa-minus text-[10px]"></i></button><input type="text" value="${item.quantity}" onchange="updateQuantity(${item.id}, this.value)" class="w-14 text-center bg-slate-950 border border-slate-700 rounded-md py-1 text-blue-400 font-bold text-sm focus:outline-none focus:border-blue-500"><button onclick="updateQuantity(${item.id}, Number(findItemById(${item.id}).quantity) + 1)" class="w-6 h-6 rounded-md bg-slate-800 text-slate-300 hover:bg-blue-500/20 hover:text-blue-400 flex items-center justify-center transition-colors"><i class="fa-solid fa-plus text-[10px]"></i></button></div>` : `<span class="font-semibold text-blue-400">${item.quantity}</span>`;
+                
+                const actionButtons = isAdmin ? `<div class="flex items-center justify-center gap-1.5"><button onclick="openEditDataModal(${item.id}, '${item.name.replace(/'/g, "\\'")}', '${item.category}', '${item.quantity}')" title="ערוך פרטים" class="w-8 h-8 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center active:scale-95 transition-all"><i class="fa-solid fa-pen"></i></button><button onclick="openEditImageModal(${item.id}, '${item.name.replace(/'/g, "\\'")}')" title="עדכן תמונה" class="w-8 h-8 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center justify-center active:scale-95 transition-all"><i class="fa-solid fa-camera"></i></button><button onclick="confirmDeleteRow(${item.id}, '${item.name.replace(/'/g, "\\'")}')" title="מחק פריט" class="w-8 h-8 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center active:scale-95 transition-all"><i class="fa-solid fa-trash-can"></i></button></div>` : ``;
+                
+                tr.innerHTML = `<td class="py-3 px-4 text-center font-mono text-slate-500 text-[10px]">${item.id}</td><td class="py-3 px-4">${getCategoryBadge(item.category)}</td><td class="py-3 px-4 font-medium text-white text-right">${item.name}</td><td class="py-3 px-4 text-center font-bold text-sm">${qtyContent}</td><td class="py-3 px-4 text-center">${imageColContent}</td><td class="py-3 px-4 text-center admin-action-col ${isAdmin ? '' : 'hidden'}">${actionButtons}</td>`;
                 tbody.appendChild(tr);
             });
         }
 
         function getCategoryBadge(category) {
-            let colors = "bg-slate-800 text-slate-300";
+            let colors = "bg-slate-800 text-slate-300 border-slate-700";
             if(category === "תשורות") colors = "bg-purple-500/20 text-purple-400 border-purple-500/30";
             if(category === "חשמל") colors = "bg-amber-500/20 text-amber-400 border-amber-500/30";
-            if(category === "ספר") colors = "bg-blue-500/20 text-blue-400 border-blue-500/30";
-            if(category === "ערכת נהג") colors = "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
+            if(category === "ספר") colors = "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
+            if(category === "ערכת נהג") colors = "bg-blue-500/20 text-blue-400 border-blue-500/30";
             return `<span class="px-2.5 py-1 rounded-md text-[10px] font-bold border ${colors}">${category}</span>`;
         }
 
@@ -369,22 +570,28 @@
             const container = document.getElementById('grid-view-container');
             container.innerHTML = '';
             if (data.length === 0) {
-                container.innerHTML = `<div class="col-span-full py-16 text-center text-slate-500">לא נמצאו פריטים</div>`;
+                container.innerHTML = `<div class="col-span-full py-16 text-center text-slate-500 font-medium">לא נמצאו פריטים</div>`;
                 return;
             }
             data.forEach(item => {
                 const card = document.createElement('div');
-                card.className = "bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-slate-700 hover:shadow-xl transition-all flex flex-col cursor-pointer relative";
+                card.className = "bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-slate-700 hover:shadow-xl transition-all flex flex-col cursor-pointer relative group";
+                
                 let imageSrc = item.image !== '' ? item.image : "https://placehold.co/300x200/0f172a/475569?text=No+Image";
-                let imageElMarkup = `<div class="h-40 w-full bg-slate-950 flex items-center justify-center overflow-hidden border-b border-slate-800 relative"><img src="${imageSrc}" alt="${item.name}" class="h-full w-full object-cover transition-transform duration-300 hover:scale-105" onerror="handleImageLoadError(this)"><span class="absolute top-3 right-3 bg-slate-950/80 backdrop-blur text-[10px] text-slate-400 px-2 py-0.5 rounded-md font-mono">מזהה ${item.id}</span></div>`;
+                let imageElMarkup = `<div class="h-44 w-full bg-slate-950 flex items-center justify-center overflow-hidden border-b border-slate-800 relative"><img src="${imageSrc}" alt="${item.name.replace(/'/g, "\\'")}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" onerror="handleImageLoadError(this)"><span class="absolute top-3 right-3 bg-slate-950/80 backdrop-blur text-[10px] text-slate-400 px-2.5 py-1 rounded-lg font-mono font-medium shadow-sm">ID ${item.id}</span></div>`;
+                
                 card.onclick = () => { if (item.image) openZoomModal(item.image, item.name, item.quantity); };
-                const qtyContent = isAdmin ? `<div class="flex items-center gap-1" onclick="event.stopPropagation()"><button onclick="updateQuantity(${item.id}, Number(findItemById(${item.id}).quantity) - 1)" class="w-6 h-6 rounded-md bg-slate-800 text-slate-300 flex items-center justify-center hover:bg-rose-500/20 hover:text-rose-400"><i class="fa-solid fa-minus text-[10px]"></i></button><input type="text" value="${item.quantity}" onchange="updateQuantity(${item.id}, this.value)" class="w-14 text-center bg-slate-950 border border-slate-700 rounded-md py-1 text-emerald-400 font-bold text-sm focus:outline-none"><button onclick="updateQuantity(${item.id}, Number(findItemById(${item.id}).quantity) + 1)" class="w-6 h-6 rounded-md bg-slate-800 text-slate-300 flex items-center justify-center hover:bg-emerald-500/20 hover:text-emerald-400"><i class="fa-solid fa-plus text-[10px]"></i></button></div>` : `<span class="font-black text-emerald-400 text-sm bg-emerald-500/10 px-2.5 py-1 rounded-lg">${item.quantity}</span>`;
-                const adminOverlayMarkup = isAdmin ? `<div class="absolute top-2 left-2 flex gap-1.5 z-20" onclick="event.stopPropagation()"><button onclick="openEditImageModal(${item.id}, '${item.name.replace(/'/g, "\\'")}')" class="w-7 h-7 rounded-lg bg-slate-950/80 hover:bg-blue-600 text-blue-400 hover:text-white flex items-center justify-center shadow-md border border-slate-800"><i class="fa-solid fa-camera"></i></button><button onclick="confirmDeleteRow(${item.id}, '${item.name.replace(/'/g, "\\'")}')" class="w-7 h-7 rounded-lg bg-slate-950/80 hover:bg-rose-600 text-rose-500 hover:text-white flex items-center justify-center shadow-md border border-slate-800"><i class="fa-solid fa-trash-can"></i></button></div>` : ``;
-                card.innerHTML = `${adminOverlayMarkup}${imageElMarkup}<div class="p-4 flex-1 flex flex-col justify-between text-right"><div><div class="mb-1.5">${getCategoryBadge(item.category)}</div><h4 class="font-bold text-white text-sm line-clamp-2">${item.name}</h4></div><div class="mt-4 pt-3 border-t border-slate-800/80 flex justify-between items-center"><span class="text-[11px] text-slate-500">כמות:</span>${qtyContent}</div></div>`;
+                
+                const qtyContent = isAdmin ? `<div class="flex items-center gap-1" onclick="event.stopPropagation()"><button onclick="updateQuantity(${item.id}, Number(findItemById(${item.id}).quantity) - 1)" class="w-7 h-7 rounded-md bg-slate-800 text-slate-300 flex items-center justify-center hover:bg-rose-500/20 hover:text-rose-400 transition-colors"><i class="fa-solid fa-minus text-[10px]"></i></button><input type="text" value="${item.quantity}" onchange="updateQuantity(${item.id}, this.value)" class="w-12 text-center bg-slate-950 border border-slate-700 rounded-md py-1 text-blue-400 font-bold text-sm focus:outline-none focus:border-blue-500"><button onclick="updateQuantity(${item.id}, Number(findItemById(${item.id}).quantity) + 1)" class="w-7 h-7 rounded-md bg-slate-800 text-slate-300 flex items-center justify-center hover:bg-blue-500/20 hover:text-blue-400 transition-colors"><i class="fa-solid fa-plus text-[10px]"></i></button></div>` : `<span class="font-black text-blue-400 text-sm bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/20">${item.quantity}</span>`;
+                
+                const adminOverlayMarkup = isAdmin ? `<div class="absolute top-2 left-2 flex flex-col gap-1.5 z-20 md:opacity-0 group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()"><button onclick="openEditDataModal(${item.id}, '${item.name.replace(/'/g, "\\'")}', '${item.category}', '${item.quantity}')" class="w-8 h-8 rounded-lg bg-slate-950/90 hover:bg-amber-600 text-amber-400 hover:text-white flex items-center justify-center shadow-md border border-slate-800 transition-all backdrop-blur"><i class="fa-solid fa-pen text-[11px]"></i></button><button onclick="openEditImageModal(${item.id}, '${item.name.replace(/'/g, "\\'")}')" class="w-8 h-8 rounded-lg bg-slate-950/90 hover:bg-blue-600 text-blue-400 hover:text-white flex items-center justify-center shadow-md border border-slate-800 transition-all backdrop-blur"><i class="fa-solid fa-camera text-[11px]"></i></button><button onclick="confirmDeleteRow(${item.id}, '${item.name.replace(/'/g, "\\'")}')" class="w-8 h-8 rounded-lg bg-slate-950/90 hover:bg-rose-600 text-rose-500 hover:text-white flex items-center justify-center shadow-md border border-slate-800 transition-all backdrop-blur"><i class="fa-solid fa-trash-can text-[11px]"></i></button></div>` : ``;
+                
+                card.innerHTML = `${adminOverlayMarkup}${imageElMarkup}<div class="p-4 flex-1 flex flex-col justify-between text-right"><div><div class="mb-2.5">${getCategoryBadge(item.category)}</div><h4 class="font-bold text-white text-sm line-clamp-2 leading-snug">${item.name}</h4></div><div class="mt-4 pt-4 border-t border-slate-800/80 flex justify-between items-center"><span class="text-[11px] text-slate-500 font-medium">כמות:</span>${qtyContent}</div></div>`;
                 container.appendChild(card);
             });
         }
 
+        // --- פילטרים ותצוגות ---
         function filterData() {
             const filtered = getFilteredData();
             document.getElementById('filteredItems').textContent = filtered.length;
@@ -393,9 +600,9 @@
 
         function selectCategory(cat) {
             selectedCategory = cat;
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.className = "tab-btn px-3.5 py-1.5 text-xs font-semibold rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all");
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.className = "tab-btn px-4 py-2 text-xs font-medium rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all active:scale-95");
             const activeBtn = document.getElementById(`tab-${cat}`);
-            if (activeBtn) activeBtn.className = "tab-btn px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-emerald-500 text-slate-950 shadow-md transition-all";
+            if (activeBtn) activeBtn.className = "tab-btn px-4 py-2 text-xs font-semibold rounded-xl bg-blue-600 text-white shadow-md transition-all active:scale-95";
             filterData();
         }
 
@@ -407,149 +614,188 @@
             const gridContainer = document.getElementById('grid-view-container');
             
             if (mode === 'table') {
-                tableBtn.className = "px-3 py-1.5 rounded-lg text-[11px] font-bold bg-slate-800 text-white flex items-center gap-1.5";
-                gridBtn.className = "px-3 py-1.5 rounded-lg text-[11px] font-bold text-slate-500 hover:text-slate-200 flex items-center gap-1.5";
+                tableBtn.className = "flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-white transition-all flex items-center justify-center gap-1.5";
+                gridBtn.className = "flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-200 transition-all flex items-center justify-center gap-1.5";
                 tableContainer.classList.remove('hidden'); gridContainer.classList.add('hidden');
             } else {
-                gridBtn.className = "px-3 py-1.5 rounded-lg text-[11px] font-bold bg-slate-800 text-white flex items-center gap-1.5";
-                tableBtn.className = "px-3 py-1.5 rounded-lg text-[11px] font-bold text-slate-500 hover:text-slate-200 flex items-center gap-1.5";
+                gridBtn.className = "flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-white transition-all flex items-center justify-center gap-1.5";
+                tableBtn.className = "flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-200 transition-all flex items-center justify-center gap-1.5";
                 gridContainer.classList.remove('hidden'); tableContainer.classList.add('hidden');
             }
             filterData();
         }
 
-        function openZoomModal(imgUrl, title, qty) {
-            document.getElementById('zoom-image-el').src = imgUrl;
-            document.getElementById('zoom-title-el').textContent = title;
-            document.getElementById('zoom-qty-el').textContent = `כמות במחסן: ${qty}`;
-            document.getElementById('zoom-modal').classList.remove('hidden');
-        }
-
-        function closeZoomModal() { document.getElementById('zoom-modal').classList.add('hidden'); }
-
-        function copyToClipboardFormatted() {
-            if (inventoryData.length === 0) return showToast("אין נתונים!", true);
-            let clipboardText = "מכולה\tשם פריט\tכמות\tתמונה\n";
-            inventoryData.forEach(item => clipboardText += `${item.category}\t${item.name}\t${item.quantity}\t${item.image}\n`);
-            const textarea = document.createElement("textarea");
-            textarea.value = clipboardText; textarea.style.position = "fixed"; textarea.style.opacity = "0";
-            document.body.appendChild(textarea); textarea.select();
-            try { document.execCommand("copy") ? showToast(`הועתקו ${inventoryData.length} שורות!`) : showToast("העתקה נכשלה", true); } catch (err) { showToast("שגיאה", true); }
-            document.body.removeChild(textarea);
-        }
-
-        function toggleAdminLoginModal() {
-            document.getElementById('admin-login-modal').classList.toggle('hidden');
-            document.getElementById('adminLoginPasswordField').value = '';
-            document.getElementById('adminLoginPasswordField').focus();
-        }
-
-        function attemptAdminLogin() {
-            if (document.getElementById('adminLoginPasswordField').value === ADMIN_PASSWORD_HASH) {
-                isAdmin = true; sessionStorage.setItem('mhasan_is_admin', 'true');
-                toggleAdminLoginModal(); updateAdminUI(); showToast("מצב עריכה הופעל!");
-            } else showToast("סיסמה שגויה", true);
-        }
-
-        function adminLogout() {
-            isAdmin = false; sessionStorage.removeItem('mhasan_is_admin');
-            updateAdminUI(); showToast("התנתקת!");
-        }
-
-        function updateAdminUI() {
-            const actionCols = document.querySelectorAll('.admin-action-col');
-            actionCols.forEach(col => isAdmin ? col.classList.remove('hidden') : col.classList.add('hidden'));
-            if (isAdmin) {
-                document.getElementById('admin-add-item-btn')?.classList.remove('hidden');
-                document.getElementById('admin-logout-btn')?.classList.remove('hidden');
-                document.getElementById('admin-login-btn')?.classList.add('hidden');
-            } else {
-                document.getElementById('admin-add-item-btn')?.classList.add('hidden');
-                document.getElementById('admin-logout-btn')?.classList.add('hidden');
-                document.getElementById('admin-login-btn')?.classList.remove('hidden');
-            }
-            filterData();
-        }
-
+        // --- הוספת פריט חכמה (כולל איתור כפילויות) ---
         function toggleAddItemModal() {
             document.getElementById('add-item-modal').classList.toggle('hidden');
-            document.getElementById('newItemName').value = ''; document.getElementById('newItemQty').value = '';
-            document.getElementById('newItemImageUrl').value = ''; document.getElementById('newItemFile').value = '';
-            document.getElementById('file-upload-label').textContent = 'לחץ לבחירת תמונה';
-            selectedFile = null;
-        }
-
-        function switchImageSource(source) {
-            currentImageSource = source;
-            document.getElementById('img-src-upload-btn').className = source === 'upload' ? "w-1/2 py-1.5 rounded-md text-[10px] font-bold bg-slate-800 text-white" : "w-1/2 py-1.5 rounded-md text-[10px] font-bold text-slate-400 hover:text-white";
-            document.getElementById('img-src-link-btn').className = source === 'link' ? "w-1/2 py-1.5 rounded-md text-[10px] font-bold bg-slate-800 text-white" : "w-1/2 py-1.5 rounded-md text-[10px] font-bold text-slate-400 hover:text-white";
-            document.getElementById('image-source-upload').classList.toggle('hidden', source !== 'upload');
-            document.getElementById('image-source-link').classList.toggle('hidden', source !== 'link');
-        }
-
-        function handleFileSelected(input) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                document.getElementById(input.id === 'newItemFile' ? 'file-upload-label' : 'edit-file-upload-label').textContent = file.name;
-                if (input.id === 'newItemFile') selectedFile = file;
-                else selectedEditFile = file;
-            }
+            document.getElementById('newItemName').value = ''; 
+            document.getElementById('newItemQty').value = '';
+            document.getElementById('newItemImageUrl').value = ''; 
+            clearSelectedFile('newItemFile', 'add-file-name-container');
         }
 
         async function submitNewItem() {
-            const cat = document.getElementById('newItemCategory').value, name = document.getElementById('newItemName').value.trim(), qty = document.getElementById('newItemQty').value.trim(), linkUrl = document.getElementById('newItemImageUrl').value.trim();
-            if (!name || !qty) return showToast("חובה להזין שם פריט וכמות!", true);
+            const cat = document.getElementById('newItemCategory').value;
+            const name = document.getElementById('newItemName').value.trim();
+            const qty = document.getElementById('newItemQty').value.trim();
+            
+            if (!name || !qty) return showToast("חובה להזין שם פריט וכמות", true);
 
+            // בדיקת כפילות חכמה
+            const duplicate = inventoryData.find(item => item.name.toLowerCase() === name.toLowerCase());
+
+            if (duplicate) {
+                // שומר את הנתונים הזמניים במקרה שהמשתמש יחליט להוסיף או לחבר
+                pendingNewItem = { cat, name, qty };
+                existingDuplicateItem = duplicate;
+
+                // אכלוס המודל של ההתראה בנתונים הקיימים
+                document.getElementById('dup-item-name').textContent = duplicate.name;
+                document.getElementById('dup-item-cat').textContent = duplicate.category;
+                document.getElementById('dup-item-qty').textContent = "כמות נוכחית: " + duplicate.quantity;
+
+                // מעבר ממסך הוספה למסך התראה
+                document.getElementById('add-item-modal').classList.add('hidden');
+                document.getElementById('duplicate-alert-modal').classList.remove('hidden');
+                return; // עוצרים פה ומחכים להחלטת המשתמש
+            }
+
+            // אין כפילות - שומר כרגיל
+            executeSubmitNewItem(cat, name, qty);
+        }
+
+        function closeDuplicateModal() {
+            document.getElementById('duplicate-alert-modal').classList.add('hidden');
+            document.getElementById('add-item-modal').classList.remove('hidden');
+        }
+
+        function proceedWithNewItem() {
+            document.getElementById('duplicate-alert-modal').classList.add('hidden');
+            executeSubmitNewItem(pendingNewItem.cat, pendingNewItem.name, pendingNewItem.qty);
+        }
+
+        async function updateExistingDuplicate() {
+            if (!existingDuplicateItem || !pendingNewItem) return;
+
+            const submitBtn = document.getElementById('dup-update-btn');
+            const originalHtml = submitBtn.innerHTML; 
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> מעדכן כמות...`;
+
+            try {
+                // חיבור הכמויות מתמטית
+                const newTotalQty = Number(existingDuplicateItem.quantity) + Number(pendingNewItem.qty);
+
+                const { error } = await supabaseClient.from('inventory')
+                    .update({ quantity: String(newTotalQty) })
+                    .eq('id', existingDuplicateItem.id);
+
+                if (error) throw error;
+
+                showToast(`הכמות חוברה! סה"כ במחסן: ${newTotalQty}`);
+                
+                // סגירה ואיפוס הכל
+                document.getElementById('duplicate-alert-modal').classList.add('hidden');
+                toggleAddItemModal(); // מאפס שדות
+                document.getElementById('add-item-modal').classList.add('hidden'); // סוגר למקרה שנפתח
+                
+                fetchLiveSheetData();
+            } catch (err) {
+                showToast("נכשל: " + err.message, true);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalHtml;
+            }
+        }
+
+        async function executeSubmitNewItem(cat, name, qty) {
+            const linkUrl = document.getElementById('newItemImageUrl').value.trim();
             const submitBtn = document.getElementById('add-item-submit-btn');
             const originalHtml = submitBtn.innerHTML; submitBtn.disabled = true;
             
             try {
                 let finalImageUrl = '';
                 
-                if (currentImageSource === 'upload' && selectedFile) {
-                    submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> מעלה תמונה לענן...`;
+                if (selectedFile) {
+                    submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> מעלה תמונה...`;
                     finalImageUrl = await uploadImageToSupabase(selectedFile);
-                } else if (currentImageSource === 'link' && linkUrl) {
+                } else if (linkUrl) {
                     finalImageUrl = linkUrl;
                 }
 
-                submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> שומר במסד הנתונים...`;
+                submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> שומר פריט...`;
                 
                 const { error } = await supabaseClient.from('inventory').insert([{
-                    category: cat,
-                    name: name,
-                    quantity: qty,
-                    image_url: finalImageUrl
+                    category: cat, name: name, quantity: qty, image_url: finalImageUrl
                 }]);
 
                 if (error) throw error;
 
-                showToast("הפריט נוסף בהצלחה!");
-                toggleAddItemModal(); 
+                showToast("הפריט נוסף בהצלחה למערכת");
+                
+                document.getElementById('add-item-modal').classList.add('hidden');
+                document.getElementById('newItemName').value = ''; 
+                document.getElementById('newItemQty').value = '';
+                document.getElementById('newItemImageUrl').value = '';
+                clearSelectedFile('newItemFile', 'add-file-name-container');
+                
                 fetchLiveSheetData();
             } catch (err) { 
                 showToast("נכשל: " + err.message, true); 
             } finally { 
-                submitBtn.disabled = false; submitBtn.innerHTML = originalHtml; 
+                if(submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = originalHtml; }
             }
         }
 
+        // --- עריכת נתוני פריט (טקסט וכמות) ---
+        function toggleEditDataModal() { document.getElementById('edit-data-modal').classList.toggle('hidden'); }
+
+        function openEditDataModal(rowId, itemName, category, qty) {
+            activeEditDataId = rowId;
+            document.getElementById('editDataName').value = itemName;
+            document.getElementById('editDataCategory').value = category || 'תשורות';
+            document.getElementById('editDataQty').value = qty;
+            toggleEditDataModal();
+        }
+
+        async function submitEditData() {
+            if (!activeEditDataId) return;
+            const newName = document.getElementById('editDataName').value.trim();
+            const newCat = document.getElementById('editDataCategory').value;
+            const newQty = document.getElementById('editDataQty').value.trim();
+
+            if (!newName || !newQty) return showToast("חובה להזין שם פריט וכמות", true);
+
+            const submitBtn = document.getElementById('edit-data-submit-btn');
+            const originalHtml = submitBtn.innerHTML; submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> שומר...`;
+
+            try {
+                const { error } = await supabaseClient.from('inventory')
+                    .update({ name: newName, category: newCat, quantity: newQty })
+                    .eq('id', activeEditDataId);
+
+                if (error) throw error;
+
+                showToast("פרטי הפריט עודכנו!");
+                toggleEditDataModal();
+                fetchLiveSheetData();
+            } catch (err) {
+                showToast("עדכון נכשל: " + err.message, true);
+            } finally {
+                submitBtn.disabled = false; submitBtn.innerHTML = originalHtml;
+            }
+        }
+
+        // --- עריכת תמונה ---
         function toggleEditImageModal() { document.getElementById('edit-image-modal').classList.toggle('hidden'); }
 
         function openEditImageModal(rowId, itemName) {
             activeEditRowId = rowId;
-            document.getElementById('editImageItemName').textContent = `מטרת הפעולה: תמונה עבור "${itemName}" בשורה ${rowId}`;
-            document.getElementById('editItemImageUrl').value = ''; document.getElementById('editItemFile').value = '';
-            document.getElementById('edit-file-upload-label').textContent = 'לחץ לבחירת תמונה מהגלריה';
-            selectedEditFile = null; switchEditImageSource('upload'); toggleEditImageModal();
-        }
-
-        function switchEditImageSource(source) {
-            currentEditImageSource = source;
-            document.getElementById('edit-img-src-upload-btn').className = source === 'upload' ? "w-1/2 py-1.5 rounded-md text-[10px] font-bold bg-slate-800 text-white" : "w-1/2 py-1.5 rounded-md text-[10px] font-bold text-slate-400 hover:text-white";
-            document.getElementById('edit-img-src-link-btn').className = source === 'link' ? "w-1/2 py-1.5 rounded-md text-[10px] font-bold bg-slate-800 text-white" : "w-1/2 py-1.5 rounded-md text-[10px] font-bold text-slate-400 hover:text-white";
-            document.getElementById('edit-image-source-upload').classList.toggle('hidden', source !== 'upload');
-            document.getElementById('edit-image-source-link').classList.toggle('hidden', source !== 'link');
+            document.getElementById('editImageItemName').textContent = `מטרת הפעולה: תמונה עבור "${itemName}"`;
+            document.getElementById('editItemImageUrl').value = ''; 
+            clearSelectedFile('editItemFile', 'edit-file-name-container');
+            toggleEditImageModal();
         }
 
         async function submitEditImage() {
@@ -562,16 +808,16 @@
             try {
                 let finalImageUrl = '';
 
-                if (currentEditImageSource === 'upload' && selectedEditFile) {
-                    submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> מעלה תמונה...`;
+                if (selectedEditFile) {
+                    submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> מכין תמונה...`;
                     finalImageUrl = await uploadImageToSupabase(selectedEditFile);
-                } else if (currentEditImageSource === 'link' && linkUrl) {
+                } else if (linkUrl) {
                     finalImageUrl = linkUrl;
                 } else {
-                    throw new Error("בחר קובץ או קישור");
+                    throw new Error("יש לבחור/לצלם תמונה או להדביק קישור");
                 }
 
-                submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> מעדכן רשומה...`;
+                submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> מעדכן במערכת...`;
 
                 const { error } = await supabaseClient.from('inventory')
                     .update({ image_url: finalImageUrl })
@@ -579,41 +825,48 @@
 
                 if (error) throw error;
 
-                showToast("התמונה עודכנה בשורה הנכונה!");
+                showToast("התמונה עודכנה בהצלחה!");
                 toggleEditImageModal(); 
                 fetchLiveSheetData();
             } catch (err) { 
-                showToast("נכשל: " + err.message, true); 
+                showToast(err.message, true); 
             } finally { 
                 submitBtn.disabled = false; submitBtn.innerHTML = originalHtml; 
             }
         }
 
+        // --- מחיקה ---
         function toggleDeleteConfirmModal() { document.getElementById('delete-confirm-modal').classList.toggle('hidden'); }
 
         function confirmDeleteRow(rowId, itemName) {
             activeDeleteRowId = rowId;
-            document.getElementById('deleteConfirmMessage').textContent = `למחוק את הפריט "${itemName}" (שורה ${rowId}) לצמיתות?`;
+            document.getElementById('deleteConfirmMessage').innerHTML = `אתה עומד למחוק את הפריט <strong>${itemName}</strong> מהמחסן.<br>פעולה זו היא בלתי הפיכה.`;
             toggleDeleteConfirmModal();
         }
 
         async function executeDeleteRow() {
             if (!activeDeleteRowId) return toggleDeleteConfirmModal();
             try {
-                const { error } = await supabaseClient.from('inventory')
-                    .delete()
-                    .eq('id', activeDeleteRowId);
-
+                const { error } = await supabaseClient.from('inventory').delete().eq('id', activeDeleteRowId);
                 if (error) throw error;
-
-                showToast("נמחק!"); 
+                showToast("הפריט הוסר מהמערכת!"); 
                 toggleDeleteConfirmModal(); 
                 fetchLiveSheetData(); 
             } catch (err) { 
-                showToast("המחיקה נכשלה", true); 
+                showToast("שגיאה במחיקה", true); 
                 toggleDeleteConfirmModal(); 
             }
         }
+
+        // --- פונקציות תצוגה ועזר ---
+        function openZoomModal(imgUrl, title, qty) {
+            document.getElementById('zoom-image-el').src = imgUrl;
+            document.getElementById('zoom-title-el').textContent = title;
+            document.getElementById('zoom-qty-el').textContent = `כמות נוכחית: ${qty}`;
+            document.getElementById('zoom-modal').classList.remove('hidden');
+        }
+
+        function closeZoomModal() { document.getElementById('zoom-modal').classList.add('hidden'); }
 
         async function updateQuantity(itemId, newQty) {
             newQty = String(newQty).trim();
@@ -622,32 +875,93 @@
             let item = findItemById(itemId);
             const prev = item.quantity; 
             item.quantity = newQty; 
-            renderCurrentView();
+            if (currentViewMode === 'table') renderTable(getFilteredData()); else renderGrid(getFilteredData());
 
             try {
-                const { error } = await supabaseClient.from('inventory')
-                    .update({ quantity: newQty })
-                    .eq('id', itemId);
-
+                const { error } = await supabaseClient.from('inventory').update({ quantity: newQty }).eq('id', itemId);
                 if (error) throw error;
-                showToast(`עודכן ל-${newQty}`);
+                // סנכרון שקט, לא מקפיצים התראה על כל +/- 
             } catch (err) { 
                 item.quantity = prev; 
-                renderCurrentView(); 
-                showToast("עדכון נכשל", true); 
+                if (currentViewMode === 'table') renderTable(getFilteredData()); else renderGrid(getFilteredData());
+                showToast("עדכון כמות נכשל בענן", true); 
             }
         }
 
-        function renderCurrentView() { currentViewMode === 'table' ? renderTable(getFilteredData()) : renderGrid(getFilteredData()); }
         function getFilteredData() { const v = document.getElementById('searchInput').value.toLowerCase().trim(); return inventoryData.filter(i => (selectedCategory === 'all' || i.category === selectedCategory) && (i.name.toLowerCase().includes(v) || i.category.toLowerCase().includes(v))); }
         function findItemById(id) { return inventoryData.find(i => i.id === id); }
 
+        function copyToClipboardFormatted() {
+            if (inventoryData.length === 0) return showToast("אין נתונים להעתקה!", true);
+            let clipboardText = "מזהה\tקטגוריה\tשם פריט\tכמות\tתמונה\n";
+            inventoryData.forEach(item => clipboardText += `${item.id}\t${item.category}\t${item.name}\t${item.quantity}\t${item.image}\n`);
+            const textarea = document.createElement("textarea");
+            textarea.value = clipboardText; textarea.style.position = "fixed"; textarea.style.opacity = "0";
+            document.body.appendChild(textarea); textarea.select();
+            try { document.execCommand("copy") ? showToast(`הועתקו ${inventoryData.length} שורות לאקסל`) : showToast("העתקה נכשלה", true); } catch (err) { showToast("שגיאה בהעתקה", true); }
+            document.body.removeChild(textarea);
+        }
+
+        function toggleAdminLoginModal() {
+            document.getElementById('admin-login-modal').classList.toggle('hidden');
+            document.getElementById('adminLoginPasswordField').value = '';
+            setTimeout(() => document.getElementById('adminLoginPasswordField').focus(), 100);
+        }
+
+        function attemptAdminLogin() {
+            if (document.getElementById('adminLoginPasswordField').value === ADMIN_PASSWORD_HASH) {
+                isAdmin = true; sessionStorage.setItem('mhasan_is_admin', 'true');
+                toggleAdminLoginModal(); updateAdminUI(); showToast("מצב ניהול הופעל בהצלחה!");
+            } else showToast("סיסמה שגויה", true);
+        }
+
+        function adminLogout() {
+            isAdmin = false; sessionStorage.removeItem('mhasan_is_admin');
+            updateAdminUI(); showToast("יצאת ממצב ניהול");
+        }
+
+        function updateAdminUI() {
+            const actionCols = document.querySelectorAll('.admin-action-col');
+            actionCols.forEach(col => isAdmin ? col.classList.remove('hidden') : col.classList.add('hidden'));
+            if (isAdmin) {
+                document.getElementById('admin-add-item-btn-desktop')?.classList.remove('hidden');
+                document.getElementById('admin-add-item-btn-desktop')?.classList.add('md:flex');
+                document.getElementById('mobile-add-fab')?.classList.remove('hidden');
+                document.getElementById('admin-logout-btn')?.classList.remove('hidden');
+                document.getElementById('admin-login-btn')?.classList.add('hidden');
+            } else {
+                document.getElementById('admin-add-item-btn-desktop')?.classList.add('hidden');
+                document.getElementById('admin-add-item-btn-desktop')?.classList.remove('md:flex');
+                document.getElementById('mobile-add-fab')?.classList.add('hidden');
+                document.getElementById('admin-logout-btn')?.classList.add('hidden');
+                document.getElementById('admin-login-btn')?.classList.remove('hidden');
+            }
+            filterData();
+        }
+
+        // מערכת התראות (Toasts)
         function showToast(msg, isErr = false) {
-            const t = document.getElementById('toast'), tm = document.getElementById('toast-message'), ti = document.getElementById('toast-icon');
+            const t = document.getElementById('toast');
+            const tm = document.getElementById('toast-message');
+            const ti = document.getElementById('toast-icon');
+            const tbg = document.getElementById('toast-icon-bg');
+            
             tm.textContent = msg;
-            t.className = `fixed bottom-6 left-6 bg-slate-900 text-white text-xs font-semibold py-3 px-5 rounded-xl shadow-2xl border ${isErr ? 'border-rose-500/50' : 'border-slate-800'} flex items-center gap-2 transform transition-all duration-300 z-50 translate-y-0 opacity-100`;
-            ti.className = `fa-solid ${isErr ? 'fa-circle-exclamation text-rose-500' : 'fa-circle-check text-emerald-400'}`;
-            setTimeout(() => { t.classList.remove('translate-y-0', 'opacity-100'); t.classList.add('translate-y-24', 'opacity-0'); }, 3000);
+            
+            if (isErr) {
+                t.className = `fixed bottom-24 sm:bottom-6 left-1/2 -translate-x-1/2 sm:left-6 sm:translate-x-0 w-[90%] sm:w-auto max-w-sm bg-slate-800 text-white text-sm font-semibold py-3.5 px-5 rounded-2xl shadow-[0_10px_40px_rgba(225,29,72,0.3)] border border-rose-500/30 flex items-center gap-3 transform transition-all duration-400 z-[60] translate-y-0 opacity-100`;
+                ti.className = 'fa-solid fa-circle-exclamation text-rose-500 text-lg';
+                tbg.className = 'w-8 h-8 rounded-full bg-rose-500/20 flex items-center justify-center shrink-0';
+            } else {
+                t.className = `fixed bottom-24 sm:bottom-6 left-1/2 -translate-x-1/2 sm:left-6 sm:translate-x-0 w-[90%] sm:w-auto max-w-sm bg-slate-800 text-white text-sm font-semibold py-3.5 px-5 rounded-2xl shadow-[0_10px_40px_rgba(59,130,246,0.3)] border border-blue-500/30 flex items-center gap-3 transform transition-all duration-400 z-[60] translate-y-0 opacity-100`;
+                ti.className = 'fa-solid fa-circle-check text-blue-400 text-lg';
+                tbg.className = 'w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0';
+            }
+            
+            setTimeout(() => { 
+                t.classList.remove('translate-y-0', 'opacity-100'); 
+                t.classList.add('translate-y-24', 'opacity-0'); 
+            }, 3500);
         }
     </script>
 </body>
