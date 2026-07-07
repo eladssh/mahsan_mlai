@@ -131,12 +131,8 @@
             <div class="bg-slate-900 border border-slate-800 p-2 sm:p-3 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xl">
                 <!-- קטגוריות נגללות בנייד -->
                 <div class="w-full sm:w-auto overflow-x-auto hide-scrollbar pb-1 sm:pb-0">
-                    <div class="flex gap-1.5 min-w-max px-1">
-                        <button onclick="selectCategory('all')" id="tab-all" class="tab-btn px-4 py-2 text-xs font-semibold rounded-xl bg-blue-600 text-white shadow-md transition-all active:scale-95">הכל</button>
-                        <button onclick="selectCategory('תשורות')" id="tab-תשורות" class="tab-btn px-4 py-2 text-xs font-medium rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all active:scale-95">תשורות</button>
-                        <button onclick="selectCategory('חשמל')" id="tab-חשמל" class="tab-btn px-4 py-2 text-xs font-medium rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all active:scale-95">חשמל</button>
-                        <button onclick="selectCategory('ספר')" id="tab-ספר" class="tab-btn px-4 py-2 text-xs font-medium rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all active:scale-95">ספרים</button>
-                        <button onclick="selectCategory('ערכת נהג')" id="tab-ערכת נהג" class="tab-btn px-4 py-2 text-xs font-medium rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all active:scale-95">ערכת נהג</button>
+                    <div id="category-tabs-container" class="flex gap-1.5 min-w-max px-1">
+                        <button onclick="selectCategory('all')" data-category="all" class="tab-btn px-4 py-2 text-xs font-semibold rounded-xl bg-blue-600 text-white shadow-md transition-all active:scale-95">הכל</button>
                     </div>
                 </div>
                 <!-- מתג תצוגה -->
@@ -218,12 +214,8 @@
             <div class="space-y-4 text-sm">
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1">קטגוריה</label>
-                    <select id="editDataCategory" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-amber-500 focus:outline-none appearance-none">
-                        <option value="תשורות">תשורות</option>
-                        <option value="חשמל">חשמל</option>
-                        <option value="ספר">ספרים</option>
-                        <option value="ערכת נהג">ערכת נהג</option>
-                    </select>
+                    <select id="editDataCategory" onchange="handleCategorySelectChange('editDataCategory','editDataCategoryCustom')" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-amber-500 focus:outline-none appearance-none"></select>
+                    <input type="text" id="editDataCategoryCustom" placeholder="הקלד שם קטגוריה חדשה" class="hidden mt-2 w-full px-4 py-3 bg-slate-950 border border-amber-500/40 rounded-xl text-white focus:ring-2 focus:ring-amber-500 focus:outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1">שם הפריט</label>
@@ -269,9 +261,8 @@
             <div class="space-y-5 text-sm">
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1.5">קטגוריה</label>
-                    <select id="newItemCategory" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none">
-                        <option value="תשורות">תשורות</option><option value="חשמל">חשמל</option><option value="ספר">ספרים</option><option value="ערכת נהג">ערכת נהג</option>
-                    </select>
+                    <select id="newItemCategory" onchange="handleCategorySelectChange('newItemCategory','newItemCategoryCustom')" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none"></select>
+                    <input type="text" id="newItemCategoryCustom" placeholder="הקלד שם קטגוריה חדשה" class="hidden mt-2 w-full px-4 py-3 bg-slate-950 border border-blue-500/40 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1.5">שם הפריט</label>
@@ -426,6 +417,23 @@
 
         const ADMIN_PASSWORD_HASH = "8714441"; 
 
+        // קטגוריות ברירת מחדל (משמשות רק כגיבוי אם עדיין אין נתונים בענן)
+        const DEFAULT_CATEGORIES = ['תשורות', 'חשמל', 'ספר', 'ערכת נהג'];
+
+        // פלטת צבעים לתגי קטגוריה - כל קטגוריה (כולל חדשות שמתווספות) מקבלת צבע קבוע וברור
+        const CATEGORY_COLOR_PALETTE = [
+            "bg-blue-500/20 text-blue-400 border-blue-500/30",
+            "bg-purple-500/20 text-purple-400 border-purple-500/30",
+            "bg-amber-500/20 text-amber-400 border-amber-500/30",
+            "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+            "bg-rose-500/20 text-rose-400 border-rose-500/30",
+            "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
+            "bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30",
+            "bg-lime-500/20 text-lime-400 border-lime-500/30",
+            "bg-orange-500/20 text-orange-400 border-orange-500/30",
+            "bg-indigo-500/20 text-indigo-400 border-indigo-500/30",
+        ];
+
         // משתנים גלובליים
         let isAdmin = sessionStorage.getItem('mhasan_is_admin') === 'true';
         let inventoryData = [];
@@ -571,6 +579,7 @@
             } finally {
                 if (syncIcon) syncIcon.classList.remove('animate-spin');
                 document.getElementById('table-loader').classList.add('hidden');
+                renderCategoryTabs();
                 switchView(currentViewMode);
                 updateStats();
             }
@@ -602,13 +611,94 @@
             });
         }
 
+        // הופך שם קטגוריה למספר קבוע, כדי שכל קטגוריה (כולל חדשות) תמיד תקבל את אותו הצבע
+        function hashCategoryToIndex(str, mod) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = (hash * 31 + str.charCodeAt(i)) >>> 0;
+            }
+            return hash % mod;
+        }
+
         function getCategoryBadge(category) {
-            let colors = "bg-slate-800 text-slate-300 border-slate-700";
-            if(category === "תשורות") colors = "bg-purple-500/20 text-purple-400 border-purple-500/30";
-            if(category === "חשמל") colors = "bg-amber-500/20 text-amber-400 border-amber-500/30";
-            if(category === "ספר") colors = "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
-            if(category === "ערכת נהג") colors = "bg-blue-500/20 text-blue-400 border-blue-500/30";
-            return `<span class="inline-block px-2.5 py-1 rounded-md text-[10px] font-bold border whitespace-nowrap ${colors}">${category}</span>`;
+            const label = category || 'כללי';
+            const idx = hashCategoryToIndex(label, CATEGORY_COLOR_PALETTE.length);
+            const colors = CATEGORY_COLOR_PALETTE[idx];
+            return `<span class="inline-block px-2.5 py-1 rounded-md text-[10px] font-bold border whitespace-nowrap ${colors}">${label}</span>`;
+        }
+
+        // מחזיר את כל הקטגוריות הקיימות כרגע: ברירות מחדל + כל קטגוריה שנוספה בפועל בנתונים
+        function getAllCategories() {
+            const set = new Set(DEFAULT_CATEGORIES);
+            inventoryData.forEach(item => { if (item.category) set.add(item.category); });
+            return Array.from(set);
+        }
+
+        // בונה מחדש את טאבי הסינון לפי הקטגוריה, כולל כל קטגוריה חדשה שנוספה
+        function renderCategoryTabs() {
+            const container = document.getElementById('category-tabs-container');
+            container.querySelectorAll('.tab-btn[data-category]').forEach(btn => {
+                if (btn.dataset.category !== 'all') btn.remove();
+            });
+            getAllCategories().forEach(cat => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.dataset.category = cat;
+                btn.textContent = cat;
+                btn.onclick = () => selectCategory(cat);
+                container.appendChild(btn);
+            });
+            updateTabStyles();
+        }
+
+        function updateTabStyles() {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                const isActive = btn.dataset.category === selectedCategory;
+                btn.className = isActive
+                    ? "tab-btn px-4 py-2 text-xs font-semibold rounded-xl bg-blue-600 text-white shadow-md transition-all active:scale-95"
+                    : "tab-btn px-4 py-2 text-xs font-medium rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all active:scale-95";
+            });
+        }
+
+        // ממלא select של קטגוריה עם כל הקטגוריות הקיימות + אפשרות להוסיף קטגוריה חדשה
+        function populateCategorySelect(selectId) {
+            const select = document.getElementById(selectId);
+            const prevValue = select.value;
+            select.innerHTML = '';
+            getAllCategories().forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat; opt.textContent = cat;
+                select.appendChild(opt);
+            });
+            const newOpt = document.createElement('option');
+            newOpt.value = '__new__'; newOpt.textContent = '+ הוסף קטגוריה חדשה';
+            select.appendChild(newOpt);
+            if (prevValue && Array.from(select.options).some(o => o.value === prevValue)) {
+                select.value = prevValue;
+            }
+        }
+
+        // מציג/מסתיר את שדה הטקסט להקלדת קטגוריה חדשה
+        function handleCategorySelectChange(selectId, inputId) {
+            const select = document.getElementById(selectId);
+            const input = document.getElementById(inputId);
+            if (select.value === '__new__') {
+                input.classList.remove('hidden');
+                input.value = '';
+                input.focus();
+            } else {
+                input.classList.add('hidden');
+                input.value = '';
+            }
+        }
+
+        // מחזיר את שם הקטגוריה הסופי שנבחר, בין אם מהרשימה ובין אם הוקלדה קטגוריה חדשה
+        function resolveCategoryValue(selectId, inputId) {
+            const select = document.getElementById(selectId);
+            if (select.value === '__new__') {
+                return document.getElementById(inputId).value.trim();
+            }
+            return select.value;
         }
 
         function renderGrid(data) {
@@ -645,9 +735,7 @@
 
         function selectCategory(cat) {
             selectedCategory = cat;
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.className = "tab-btn px-4 py-2 text-xs font-medium rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-all active:scale-95");
-            const activeBtn = document.getElementById(`tab-${cat}`);
-            if (activeBtn) activeBtn.className = "tab-btn px-4 py-2 text-xs font-semibold rounded-xl bg-blue-600 text-white shadow-md transition-all active:scale-95";
+            updateTabStyles();
             filterData();
         }
 
@@ -673,6 +761,9 @@
         // --- הוספת פריט חכמה (כולל איתור כפילויות) ---
         function toggleAddItemModal() {
             document.getElementById('add-item-modal').classList.toggle('hidden');
+            populateCategorySelect('newItemCategory');
+            document.getElementById('newItemCategoryCustom').classList.add('hidden');
+            document.getElementById('newItemCategoryCustom').value = '';
             document.getElementById('newItemName').value = ''; 
             document.getElementById('newItemQty').value = '';
             document.getElementById('newItemImageUrl').value = ''; 
@@ -680,10 +771,11 @@
         }
 
         async function submitNewItem() {
-            const cat = document.getElementById('newItemCategory').value;
+            const cat = resolveCategoryValue('newItemCategory', 'newItemCategoryCustom');
             const name = document.getElementById('newItemName').value.trim();
             const qty = document.getElementById('newItemQty').value.trim();
             
+            if (!cat) return showToast("יש להזין שם קטגוריה", true);
             if (!name || !qty) return showToast("חובה להזין שם פריט וכמות", true);
 
             // בדיקת כפילות חכמה
@@ -797,6 +889,9 @@
 
         function openEditDataModal(rowId, itemName, category, qty) {
             activeEditDataId = rowId;
+            populateCategorySelect('editDataCategory');
+            document.getElementById('editDataCategoryCustom').classList.add('hidden');
+            document.getElementById('editDataCategoryCustom').value = '';
             document.getElementById('editDataName').value = itemName;
             document.getElementById('editDataCategory').value = category || 'תשורות';
             document.getElementById('editDataQty').value = qty;
@@ -806,9 +901,10 @@
         async function submitEditData() {
             if (!activeEditDataId) return;
             const newName = document.getElementById('editDataName').value.trim();
-            const newCat = document.getElementById('editDataCategory').value;
+            const newCat = resolveCategoryValue('editDataCategory', 'editDataCategoryCustom');
             const newQty = document.getElementById('editDataQty').value.trim();
 
+            if (!newCat) return showToast("יש להזין שם קטגוריה", true);
             if (!newName || !newQty) return showToast("חובה להזין שם פריט וכמות", true);
 
             const submitBtn = document.getElementById('edit-data-submit-btn');
