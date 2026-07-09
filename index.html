@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>מערכת ניהול מלאי - מרכז הובלה</title>
-    
+    <meta name="description" content="מערכת ניהול מלאי דיגיטלית בזמן אמת - מעקב פריטים, כמויות ותמונות">
+    <title>מערכת ניהול מלאי</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230B1220'/%3E%3Cpath d='M28 34 L50 22 L72 34 L72 66 L50 78 L28 66 Z' fill='none' stroke='%232F6FEB' stroke-width='5'/%3E%3Cpath d='M28 34 L50 46 L72 34 M50 46 L50 78' fill='none' stroke='%232F6FEB' stroke-width='5'/%3E%3C/svg%3E">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -20,11 +22,30 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
+        /* ===== משתני מיתוג — צבע יחיד שקובע את זהות הלקוח בכל המערכת ===== */
+        :root {
+            --accent: #2F6FEB;
+            --accent-dim: rgba(47,111,235,0.14);
+            --accent-ring: rgba(47,111,235,0.35);
+            --accent-glow: rgba(47,111,235,0.22);
+        }
+
         body { 
             font-family: 'Rubik', sans-serif; 
-            -webkit-tap-highlight-color: transparent; 
+            -webkit-tap-highlight-color: transparent;
+            font-variant-numeric: tabular-nums;
         }
-        
+
+        /* נגישות: טבעת פוקוס עקבית ותואמת מיתוג בניווט מקלדת */
+        :focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+        }
+
         /* הסתרת פס הגלילה לטאבים בנייד אבל השארת היכולת לגלול */
         .hide-scrollbar::-webkit-scrollbar {
             display: none;
@@ -34,6 +55,12 @@
             scrollbar-width: none;
         }
 
+        /* גלילה מעודנת למחשב */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 999px; border: 2px solid #020617; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+
         /* אנימציות למודלים (תצורת Bottom Sheet בנייד) */
         .modal-enter {
             animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -42,6 +69,36 @@
             from { opacity: 0; transform: scale(0.95) translateY(20px); }
             to { opacity: 1; transform: scale(1) translateY(0); }
         }
+
+        /* רכיבי מיתוג משותפים — שינוי --accent בלבד משנה את כל אלו */
+        .brand-text { color: var(--accent); }
+        .brand-bg { background-color: var(--accent); }
+        .brand-border { border-color: var(--accent) !important; }
+        .brand-dim-bg { background-color: var(--accent-dim); }
+        .brand-glow { box-shadow: 0 0 20px var(--accent-glow); }
+        .brand-btn {
+            background-color: var(--accent);
+            color: #fff;
+            box-shadow: 0 8px 20px -6px var(--accent-glow);
+            transition: filter 0.15s ease, transform 0.1s ease;
+        }
+        .brand-btn:hover { filter: brightness(1.1); }
+        .brand-btn:active { transform: scale(0.97); }
+        .brand-ring:focus { outline: none; box-shadow: 0 0 0 2px var(--accent-ring); border-color: var(--accent) !important; }
+
+        .accent-strip {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent) 20%, var(--accent) 80%, transparent);
+            opacity: 0.6;
+        }
+
+        .step-marker {
+            background-color: var(--accent-dim);
+            color: var(--accent);
+            border: 1px solid var(--accent-ring);
+        }
+
+        .dev-credit-link:hover { color: var(--accent); }
     </style>
 
     <script>
@@ -63,7 +120,7 @@
                 <span id="connection-indicator-text" class="text-slate-400 font-medium">מתחבר לענן...</span>
             </div>
             <div class="flex items-center gap-2 text-slate-400">
-                <span class="hidden sm:inline">סטטוס:</span> <strong class="text-blue-400 font-mono text-[10px] bg-blue-500/10 px-2 py-0.5 rounded" id="current-sheet-id-label">מערכת חיה</strong>
+                <span class="hidden sm:inline">מערכת:</span> <strong class="brand-text font-semibold text-[10px] brand-dim-bg px-2 py-0.5 rounded" id="current-sheet-id-label">מרכז הובלה</strong>
             </div>
         </div>
     </div>
@@ -72,21 +129,24 @@
     <header class="bg-slate-900/80 border-b border-slate-800 py-3 sm:py-4 px-4 sm:px-6 sticky top-0 z-40 backdrop-blur-xl">
         <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
              <div class="flex items-center gap-3 sm:gap-4">
-                <div class="bg-white p-1 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.15)] border border-slate-700/50 flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 shrink-0">
-                    <img src="Logo_hovala_new.png" alt="לוגו מרכז הובלה" class="h-full w-full object-contain" onerror="this.src='https://placehold.co/100x100/1e293b/3b82f6?text=LOGO'">
+                <div class="bg-white p-1 rounded-xl brand-glow border border-slate-700/50 flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 shrink-0">
+                    <img id="org-logo-img" src="Logo_hovala_new.png" alt="לוגו הארגון" class="h-full w-full object-contain" onerror="this.src='https://placehold.co/100x100/1e293b/3b82f6?text=LOGO'">
                 </div>
                 <div>
-                     <h1 class="text-lg sm:text-xl font-black text-white tracking-tight leading-tight">מלאי מרכז הובלה</h1>
-                    <p class="text-blue-400 text-[10px] sm:text-xs font-medium">ניהול ציוד מתקדם בזמן אמת</p>
+                     <h1 id="org-name-label" class="text-lg sm:text-xl font-black text-white tracking-tight leading-tight">מלאי מרכז הובלה</h1>
+                    <p class="brand-text text-[10px] sm:text-xs font-medium">ניהול ציוד מתקדם בזמן אמת</p>
                 </div>
             </div>
             
              <div class="flex items-center gap-2">
                 <!-- כפתור הוספה (מחשב בלבד - במובייל יש FAB למטה) -->
-                <button id="admin-add-item-btn-desktop" onclick="toggleAddItemModal()" class="hidden md:flex bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all text-white font-bold px-4 py-2 rounded-xl items-center gap-2 text-xs shadow-lg shadow-blue-600/20 admin-action-col">
+                <button id="admin-add-item-btn-desktop" onclick="toggleAddItemModal()" class="hidden md:flex brand-btn active:scale-95 transition-all font-bold px-4 py-2 rounded-xl items-center gap-2 text-xs admin-action-col">
                     <i class="fa-solid fa-circle-plus"></i> הוסף פריט
                 </button>
-                
+
+                <button onclick="toggleGuideModal()" title="מדריך שימוש" class="bg-slate-800 hover:bg-slate-700 active:scale-95 transition-all text-white font-medium w-9 h-9 sm:w-auto sm:px-4 sm:py-2 rounded-xl flex items-center justify-center gap-2 text-xs border border-slate-700 shadow-sm">
+                    <i class="fa-solid fa-circle-info"></i> <span class="hidden sm:inline">מדריך</span>
+                </button>
                 <button id="admin-login-btn" onclick="toggleAdminLoginModal()" class="bg-slate-800 hover:bg-slate-700 active:scale-95 transition-all text-white font-medium px-3 sm:px-4 py-2 rounded-xl flex items-center gap-2 text-xs border border-slate-700 shadow-sm">
                     <i class="fa-solid fa-user-shield"></i> <span class="hidden sm:inline">ניהול</span>
                 </button>
@@ -98,6 +158,7 @@
                 </button>
             </div>
         </div>
+        <div class="accent-strip -mb-3 sm:-mb-4 mt-3 sm:mt-4"></div>
     </header>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -105,20 +166,20 @@
         <!-- עמודת חיפוש וסטטיסטיקה -->
         <div class="lg:col-span-1 space-y-4 sm:space-y-6">
             <div class="bg-slate-900 border border-slate-800 p-4 sm:p-5 rounded-2xl shadow-xl">
-                <h3 class="font-bold text-sm mb-4 text-white flex items-center gap-2">
-                    <i class="fa-solid fa-magnifying-glass text-blue-400"></i> חיפוש חכם
+                <h3 class="font-bold text-sm mb-4 text-white flex items-center gap-2 tracking-tight">
+                    <i class="fa-solid fa-magnifying-glass brand-text"></i> חיפוש חכם
                 </h3>
                 <div class="relative mb-4">
                     <input type="text" id="searchInput" oninput="filterData()" placeholder="חפש פריט, מכולה..." 
-                           class="w-full pl-3 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all shadow-inner">
+                           class="w-full pl-3 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none brand-ring focus:border-transparent transition-all shadow-inner">
                 </div>
                 <div class="grid grid-cols-2 lg:grid-cols-1 gap-2.5 text-xs">
                     <div class="p-3 bg-slate-950 rounded-xl border border-slate-800/80 flex flex-col justify-center">
-                       <span class="text-slate-500 text-[10px] font-medium mb-0.5">סה"כ פריטים במלאי</span>
+                       <span class="text-slate-500 text-[10px] font-medium mb-0.5 uppercase tracking-wide">סה"כ פריטים במלאי</span>
                         <span id="totalItems" class="font-black text-white text-base">0</span>
                     </div>
                     <div class="p-3 bg-slate-950 rounded-xl border border-slate-800/80 flex flex-col justify-center">
-                         <span class="text-slate-500 text-[10px] font-medium mb-0.5">תוצאות חיפוש</span>
+                         <span class="text-slate-500 text-[10px] font-medium mb-0.5 uppercase tracking-wide">תוצאות חיפוש</span>
                         <span id="filteredItems" class="font-black text-amber-400 text-base">0</span>
                     </div>
                 </div>
@@ -132,7 +193,7 @@
                 <!-- קטגוריות נגללות בנייד -->
                 <div class="w-full sm:w-auto overflow-x-auto hide-scrollbar pb-1 sm:pb-0">
                     <div id="category-tabs-container" class="flex gap-1.5 min-w-max px-1">
-                        <button onclick="selectCategory('all')" data-category="all" class="tab-btn px-4 py-2 text-xs font-semibold rounded-xl bg-blue-600 text-white shadow-md transition-all active:scale-95">הכל</button>
+                        <button onclick="selectCategory('all')" data-category="all" class="tab-btn brand-btn px-4 py-2 text-xs font-semibold rounded-xl transition-all active:scale-95">הכל</button>
                     </div>
                 </div>
                 <!-- מתג תצוגה -->
@@ -145,7 +206,7 @@
             <!-- לאודר -->
             <div id="table-loader" class="py-24 flex flex-col items-center justify-center">
                 <div class="relative w-12 h-12">
-                    <div class="absolute inset-0 rounded-full border-t-2 border-blue-500 animate-spin"></div>
+                    <div class="absolute inset-0 rounded-full border-t-2 animate-spin" style="border-color: var(--accent) transparent transparent transparent;"></div>
                     <div class="absolute inset-2 rounded-full border-r-2 border-amber-500 animate-spin" style="animation-direction: reverse; animation-duration: 0.7s;"></div>
                 </div>
                 <p class="text-slate-400 text-xs mt-4 font-medium tracking-wide">טוען נתונים מהענן...</p>
@@ -176,15 +237,20 @@
     </main>
 
     <!-- קרדיט מפתח ב-Footer -->
-    <footer class="w-full text-center py-6 mt-auto text-slate-500 text-[10px] sm:text-xs font-medium z-10 relative">
-        <p class="flex items-center justify-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
-            <i class="fa-solid fa-laptop-code text-blue-500/70"></i>
-            פותח ואופיין ע"י <span class="text-slate-300 font-bold tracking-wide">סרן במיל' אלעד שושן</span>
+    <footer class="w-full text-center py-8 mt-auto text-slate-500 text-[10px] sm:text-xs font-medium z-10 relative border-t border-slate-900">
+        <p class="flex items-center justify-center gap-1.5 opacity-90 hover:opacity-100 transition-opacity">
+            <i class="fa-solid fa-laptop-code brand-text"></i>
+            <span>פותח ואופיין ע"י</span>
+            <a id="developer-credit-link" href="#" target="_blank" rel="noopener noreferrer"
+               class="dev-credit-link text-slate-300 font-bold tracking-wide underline decoration-slate-700 decoration-dotted underline-offset-4 transition-colors">
+                <span id="developer-name-label">סרן במיל' אלעד שושן</span>
+            </a>
         </p>
+        <p id="footer-copyright" class="mt-2 text-slate-600 text-[9px] sm:text-[10px] tracking-wide"></p>
     </footer>
 
     <!-- כפתור הוספה צף למובייל (FAB) -->
-    <button id="mobile-add-fab" onclick="toggleAddItemModal()" class="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 hover:bg-blue-500 rounded-full shadow-[0_4px_20px_rgba(37,99,235,0.4)] flex items-center justify-center text-white text-xl z-30 transition-transform active:scale-90 md:hidden admin-action-col hidden">
+    <button id="mobile-add-fab" onclick="toggleAddItemModal()" class="fixed bottom-6 right-6 w-14 h-14 brand-btn rounded-full flex items-center justify-center text-xl z-30 transition-transform active:scale-90 md:hidden admin-action-col hidden">
         <i class="fa-solid fa-plus"></i>
     </button>
 
@@ -196,9 +262,9 @@
             <h3 class="font-black text-lg text-white mb-6 flex items-center gap-2"><div class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center"><i class="fa-solid fa-user-shield"></i></div> כניסת מנהל</h3>
             <div class="space-y-4 text-sm">
                 <div>
-                    <input type="password" id="adminLoginPasswordField" placeholder="סיסמת מנהל" onkeydown="if(event.key==='Enter') attemptAdminLogin()" class="w-full px-4 py-3.5 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-slate-600 transition-all text-center tracking-widest text-lg">
+                    <input type="password" id="adminLoginPasswordField" placeholder="סיסמת מנהל" onkeydown="if(event.key==='Enter') attemptAdminLogin()" class="w-full px-4 py-3.5 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none brand-ring text-white placeholder-slate-600 transition-all text-center tracking-widest text-lg">
                 </div>
-                <button onclick="attemptAdminLogin()" class="w-full bg-blue-600 hover:bg-blue-500 transition-colors text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 active:scale-95">
+                <button onclick="attemptAdminLogin()" class="w-full brand-btn transition-colors font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 active:scale-95">
                     התחבר למערכת <i class="fa-solid fa-arrow-left mt-0.5"></i>
                 </button>
             </div>
@@ -247,7 +313,7 @@
             </div>
             <div class="bg-slate-900/80 backdrop-blur border border-slate-800 px-6 py-3 rounded-2xl text-center pointer-events-auto shrink-0">
                 <h3 id="zoom-title-el" class="text-white font-black text-base sm:text-xl">שם פריט</h3>
-                <p id="zoom-qty-el" class="text-blue-400 text-sm mt-0.5 font-bold bg-blue-500/10 inline-block px-3 py-1 rounded-lg">כמות: 0</p>
+                <p id="zoom-qty-el" class="brand-text text-sm mt-0.5 font-bold brand-dim-bg inline-block px-3 py-1 rounded-lg">כמות: 0</p>
             </div>
         </div>
     </div>
@@ -261,23 +327,23 @@
             <div class="space-y-5 text-sm">
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1.5">קטגוריה</label>
-                    <select id="newItemCategory" onchange="handleCategorySelectChange('newItemCategory','newItemCategoryCustom')" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none"></select>
-                    <input type="text" id="newItemCategoryCustom" placeholder="הקלד שם קטגוריה חדשה" class="hidden mt-2 w-full px-4 py-3 bg-slate-950 border border-blue-500/40 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <select id="newItemCategory" onchange="handleCategorySelectChange('newItemCategory','newItemCategoryCustom')" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none brand-ring appearance-none"></select>
+                    <input type="text" id="newItemCategoryCustom" placeholder="הקלד שם קטגוריה חדשה" class="hidden mt-2 w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none brand-ring">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1.5">שם הפריט</label>
-                    <input type="text" id="newItemName" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:outline-none placeholder-slate-600" placeholder="לדוגמה: ערכת קפה מלאה">
+                    <input type="text" id="newItemName" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none brand-ring placeholder-slate-600" placeholder="לדוגמה: ערכת קפה מלאה">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1.5">כמות במלאי</label>
-                    <input type="number" id="newItemQty" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="0">
+                    <input type="number" id="newItemQty" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none brand-ring" placeholder="0">
                 </div>
                 
                 <!-- ממשק תמונה מותאם לנייד -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-2">תמונת הפריט</label>
                     <div class="grid grid-cols-2 gap-3 mb-2">
-                        <button onclick="openDeviceCamera('newItemFile')" class="py-3 px-2 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-blue-400 flex flex-col items-center justify-center gap-1 transition-colors active:scale-95">
+                        <button onclick="openDeviceCamera('newItemFile')" class="py-3 px-2 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 brand-text flex flex-col items-center justify-center gap-1 transition-colors active:scale-95">
                             <i class="fa-solid fa-camera text-xl mb-1"></i>
                             <span class="text-[11px] font-bold">צלם עכשיו</span>
                         </button>
@@ -289,22 +355,22 @@
                     
                     <input type="file" id="newItemFile" accept="image/*" class="hidden" onchange="handleFileSelected(this, 'add-file-name')">
                     
-                    <div id="add-file-name-container" class="hidden mt-2 p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl flex justify-between items-center">
+                    <div id="add-file-name-container" class="hidden mt-2 p-3 brand-dim-bg border rounded-xl flex justify-between items-center" style="border-color: var(--accent-ring);">
                         <div class="flex items-center gap-2 overflow-hidden">
-                            <i class="fa-solid fa-image text-blue-400"></i>
-                            <span id="add-file-name" class="text-xs text-blue-100 truncate">תמונה.jpg</span>
+                            <i class="fa-solid fa-image brand-text"></i>
+                            <span id="add-file-name" class="text-xs text-slate-100 truncate">תמונה.jpg</span>
                         </div>
                         <button onclick="clearSelectedFile('newItemFile', 'add-file-name-container')" class="text-slate-400 hover:text-rose-400 p-1"><i class="fa-solid fa-xmark"></i></button>
                     </div>
 
                     <div class="pt-3 mt-1 border-t border-slate-800/80">
                         <p class="text-[10px] text-slate-500 text-center mb-2">ניתן להדביק קישור חיצוני אם התמונה כבר בענן</p>
-                        <input type="text" id="newItemImageUrl" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="https://...">
+                        <input type="text" id="newItemImageUrl" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none brand-ring" placeholder="https://...">
                     </div>
                 </div>
 
                 <div class="pt-2">
-                    <button id="add-item-submit-btn" onclick="submitNewItem()" class="w-full bg-blue-600 hover:bg-blue-500 transition-colors text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 active:scale-95">
+                    <button id="add-item-submit-btn" onclick="submitNewItem()" class="w-full brand-btn transition-colors font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 active:scale-95">
                         <i class="fa-solid fa-check"></i> שמור פריט
                     </button>
                 </div>
@@ -355,7 +421,7 @@
             <div class="space-y-4 text-sm">
                 <!-- ממשק תמונה מותאם לנייד -->
                 <div class="grid grid-cols-2 gap-3 mb-2">
-                    <button onclick="openDeviceCamera('editItemFile')" class="py-4 px-2 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-blue-400 flex flex-col items-center justify-center gap-2 transition-colors active:scale-95">
+                    <button onclick="openDeviceCamera('editItemFile')" class="py-4 px-2 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 brand-text flex flex-col items-center justify-center gap-2 transition-colors active:scale-95">
                         <i class="fa-solid fa-camera text-2xl mb-1"></i>
                         <span class="text-[11px] font-bold">צלם עכשיו</span>
                     </button>
@@ -367,21 +433,21 @@
                 
                 <input type="file" id="editItemFile" accept="image/*" class="hidden" onchange="handleFileSelected(this, 'edit-file-name')">
                 
-                <div id="edit-file-name-container" class="hidden p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl flex justify-between items-center">
+                <div id="edit-file-name-container" class="hidden p-3 brand-dim-bg border rounded-xl flex justify-between items-center" style="border-color: var(--accent-ring);">
                     <div class="flex items-center gap-2 overflow-hidden">
-                        <i class="fa-solid fa-image text-blue-400"></i>
-                        <span id="edit-file-name" class="text-xs text-blue-100 truncate">תמונה.jpg</span>
+                        <i class="fa-solid fa-image brand-text"></i>
+                        <span id="edit-file-name" class="text-xs text-slate-100 truncate">תמונה.jpg</span>
                     </div>
                     <button onclick="clearSelectedFile('editItemFile', 'edit-file-name-container')" class="text-slate-400 hover:text-rose-400 p-1"><i class="fa-solid fa-xmark"></i></button>
                 </div>
 
                 <div class="pt-2 border-t border-slate-800/80 mt-2">
                      <p class="text-[10px] text-slate-500 text-center mb-3">ניתן להדביק קישור חיצוני אם התמונה כבר בענן</p>
-                    <input type="text" id="editItemImageUrl" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="https://...">
+                    <input type="text" id="editItemImageUrl" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none brand-ring" placeholder="https://...">
                 </div>
 
                 <div class="pt-2">
-                    <button id="edit-image-submit-btn" onclick="submitEditImage()" class="w-full bg-blue-600 hover:bg-blue-500 transition-colors text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 active:scale-95">
+                    <button id="edit-image-submit-btn" onclick="submitEditImage()" class="w-full brand-btn transition-colors font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 active:scale-95">
                         <i class="fa-solid fa-cloud-arrow-up"></i> שמור תמונה
                     </button>
                 </div>
@@ -401,6 +467,43 @@
         </div>
     </div>
 
+    <!-- מודל מדריך שימוש -->
+    <div id="guide-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center sm:p-4">
+        <div class="bg-slate-900 sm:border border-slate-800 p-6 sm:rounded-2xl rounded-t-3xl w-full max-w-lg shadow-2xl relative modal-enter max-h-[85vh] overflow-y-auto hide-scrollbar pb-10 sm:pb-6">
+            <div class="w-12 h-1.5 bg-slate-800 rounded-full mx-auto mb-4 sm:hidden"></div>
+            <button onclick="toggleGuideModal()" class="absolute left-6 top-6 text-slate-500 hover:text-slate-200 bg-slate-800/50 w-8 h-8 rounded-full flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="font-black text-lg text-white mb-1 flex items-center gap-2"><div class="w-8 h-8 rounded-lg brand-dim-bg brand-text flex items-center justify-center"><i class="fa-solid fa-book-open"></i></div> מדריך שימוש במערכת</h3>
+            <p class="text-xs text-slate-500 mb-6">כל מה שצריך לדעת כדי לנהל את המלאי בצורה יעילה.</p>
+
+            <div class="space-y-5 text-sm">
+                <div class="flex gap-3">
+                    <div class="step-marker w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0">1</div>
+                    <div><p class="font-bold text-white text-sm">חיפוש וסינון</p><p class="text-slate-400 text-xs leading-relaxed mt-0.5">הקלידו בתיבת החיפוש כדי לאתר פריט לפי שם או קטגוריה, ולחצו על אחת מלשוניות הקטגוריות כדי לצמצם את התצוגה.</p></div>
+                </div>
+                <div class="flex gap-3">
+                    <div class="step-marker w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0">2</div>
+                    <div><p class="font-bold text-white text-sm">מעבר בין תצוגות</p><p class="text-slate-400 text-xs leading-relaxed mt-0.5">תצוגת "גלריה" מציגה כרטיסים עם תמונות, ותצוגת "טבלה" מציגה את כל הנתונים בשורות מסודרות. לחיצה על תמונה פותחת אותה במסך מלא, וניתן לדפדף בין פריטים בהחלקה או בחצי המקלדת.</p></div>
+                </div>
+                <div class="flex gap-3">
+                    <div class="step-marker w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0">3</div>
+                    <div><p class="font-bold text-white text-sm">כניסת מנהל</p><p class="text-slate-400 text-xs leading-relaxed mt-0.5">לחצו על "ניהול" בפינה העליונה והזינו את סיסמת המנהל כדי לפתוח את יכולות העריכה: הוספה, עדכון כמויות, עדכון תמונה ומחיקה.</p></div>
+                </div>
+                <div class="flex gap-3">
+                    <div class="step-marker w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0">4</div>
+                    <div><p class="font-bold text-white text-sm">הוספת פריט חדש</p><p class="text-slate-400 text-xs leading-relaxed mt-0.5">כמנהל, לחצו על "הוסף פריט", בחרו קטגוריה קיימת או צרו קטגוריה חדשה, ציינו שם וכמות, וצרפו תמונה בצילום, מהגלריה, או בהדבקת קישור. המערכת תתריע אם כבר קיים פריט בשם דומה ותציע לחבר את הכמויות.</p></div>
+                </div>
+                <div class="flex gap-3">
+                    <div class="step-marker w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0">5</div>
+                    <div><p class="font-bold text-white text-sm">עדכון כמות, פרטים ותמונה</p><p class="text-slate-400 text-xs leading-relaxed mt-0.5">בתצוגת מנהל ניתן לשנות כמות ישירות עם הכפתורים +/-, לערוך שם וקטגוריה בלחיצה על אייקון העיפרון, ולהחליף תמונה בלחיצה על אייקון המצלמה.</p></div>
+                </div>
+                <div class="flex gap-3">
+                    <div class="step-marker w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0">6</div>
+                    <div><p class="font-bold text-white text-sm">רענון ומחיקה</p><p class="text-slate-400 text-xs leading-relaxed mt-0.5">הנתונים מסונכרנים אוטומטית מול הענן; ניתן גם לרענן ידנית. מחיקת פריט היא פעולה בלתי הפיכה ודורשת אישור נוסף.</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- הודעות מוקפצות -->
     <div id="toast" class="fixed bottom-24 sm:bottom-6 left-1/2 -translate-x-1/2 sm:left-6 sm:translate-x-0 w-[90%] sm:w-auto max-w-sm bg-slate-800 text-white text-sm font-semibold py-3.5 px-5 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-slate-700 flex items-center gap-3 transform translate-y-24 opacity-0 transition-all duration-400 pointer-events-none z-[60]">
         <div id="toast-icon-bg" class="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
@@ -410,15 +513,69 @@
     </div>
 
     <script>
+        // =====================================================================================
+        // ⚙️  הגדרות לקוח — זהו האזור היחיד שצריך לערוך כדי להעביר את המערכת ללקוח חדש
+        // =====================================================================================
+        // כדי לשכפל את המערכת ללקוח/מחסן נוסף:
+        //   1. צרו טבלה חדשה ב-Supabase (או פרויקט Supabase חדש) עם אותו מבנה עמודות
+        //      (id, category, name, quantity, image_url) ועדכנו את TABLE_NAME (ואת SUPABASE_URL /
+        //      SUPABASE_ANON_KEY אם מדובר בפרויקט Supabase נפרד).
+        //   2. עדכנו את ORG_NAME לשם המחסן/הלקוח החדש.
+        //   3. עדכנו את ADMIN_PASSWORD לסיסמת מנהל ייחודית ללקוח.
+        //   4. (אופציונלי) עדכנו ACCENT_HEX לצבע המותג של הלקוח — כל הממשק יתעדכן אוטומטית.
+        //   5. (אופציונלי) עדכנו LOGO_PATH לקובץ הלוגו של הלקוח.
+        // שום מקום אחר בקוד לא צריך להשתנות.
+        const CONFIG = {
+            ORG_NAME: "מרכז הובלה",                 // שם הלקוח/המחסן, מוצג בכותרת ובשורת הסטטוס
+            TAGLINE: "ניהול ציוד מתקדם בזמן אמת",     // תת-כותרת קצרה
+            TABLE_NAME: "inventory",                 // שם הטבלה ב-Supabase עבור לקוח זה
+            ADMIN_PASSWORD: "L6900",                 // סיסמת מנהל ללקוח זה
+            ACCENT_HEX: "#2F6FEB",                    // צבע המיתוג הראשי של הלקוח
+            LOGO_PATH: "Logo_hovala_new.png",         // נתיב/קישור ללוגו הלקוח
+            DEFAULT_CATEGORIES: ['תשורות', 'חשמל', 'ספר', 'ערכת נהג'],
+            DEVELOPER_TITLE: "סרן במיל'",
+            DEVELOPER_NAME: "אלעד שושן",
+            DEVELOPER_LINKEDIN: "https://www.linkedin.com/in/elad-shoshan-47b578240/",
+            TENANT_ID: "mhasan"                       // מזהה טכני פנימי, ייחודי לכל לקוח (למניעת התנגשות הרשאות מנהל בדפדפן)
+        };
+
         // אתחול Supabase
         const SUPABASE_URL = "https://gumrukucfdbwibmjvqlb.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd1bXJ1a3VjZmRid2libWp2cWxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwODc3NDYsImV4cCI6MjA5ODY2Mzc0Nn0.BTyxqd_WbGTaFY0qqm5Ck23fu1pNIahTww9gXoeFbIE";
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const ADMIN_PASSWORD_HASH = "L6900"; 
+        const ADMIN_PASSWORD_HASH = CONFIG.ADMIN_PASSWORD;
 
         // קטגוריות ברירת מחדל (משמשות רק כגיבוי אם עדיין אין נתונים בענן)
-        const DEFAULT_CATEGORIES = ['תשורות', 'חשמל', 'ספר', 'ערכת נהג'];
+        const DEFAULT_CATEGORIES = CONFIG.DEFAULT_CATEGORIES;
+
+        // ממיר צבע HEX ל-rgba, כדי לגזור אוטומטית את כל גווני המיתוג (רקע עמום, טבעת פוקוס, זוהר) מצבע אחד בלבד
+        function hexToRgba(hex, alpha) {
+            const clean = hex.replace('#', '');
+            const bigint = parseInt(clean, 16);
+            const r = (bigint >> 16) & 255, g = (bigint >> 8) & 255, b = bigint & 255;
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+
+        // מחיל את הגדרות המיתוג והלקוח על הממשק (כותרת, לוגו, צבע, קרדיט מפתח, זכויות יוצרים)
+        function applyBranding() {
+            document.documentElement.style.setProperty('--accent', CONFIG.ACCENT_HEX);
+            document.documentElement.style.setProperty('--accent-dim', hexToRgba(CONFIG.ACCENT_HEX, 0.14));
+            document.documentElement.style.setProperty('--accent-ring', hexToRgba(CONFIG.ACCENT_HEX, 0.35));
+            document.documentElement.style.setProperty('--accent-glow', hexToRgba(CONFIG.ACCENT_HEX, 0.22));
+
+            document.title = `${CONFIG.ORG_NAME} — ניהול מלאי`;
+            document.getElementById('org-name-label').textContent = `מלאי ${CONFIG.ORG_NAME}`;
+            document.getElementById('current-sheet-id-label').textContent = CONFIG.ORG_NAME;
+            const logoImg = document.getElementById('org-logo-img');
+            logoImg.src = CONFIG.LOGO_PATH;
+            logoImg.alt = `לוגו ${CONFIG.ORG_NAME}`;
+
+            const devLink = document.getElementById('developer-credit-link');
+            devLink.href = CONFIG.DEVELOPER_LINKEDIN;
+            document.getElementById('developer-name-label').textContent = `${CONFIG.DEVELOPER_TITLE} ${CONFIG.DEVELOPER_NAME}`;
+            document.getElementById('footer-copyright').textContent = `© ${new Date().getFullYear()} ${CONFIG.ORG_NAME}. כל הזכויות שמורות.`;
+        }
 
         // פלטת צבעים לתגי קטגוריה - כל קטגוריה (כולל חדשות שמתווספות) מקבלת צבע קבוע וברור
         const CATEGORY_COLOR_PALETTE = [
@@ -435,7 +592,7 @@
         ];
 
         // משתנים גלובליים
-        let isAdmin = sessionStorage.getItem('mhasan_is_admin') === 'true';
+        let isAdmin = sessionStorage.getItem(CONFIG.TENANT_ID + '_is_admin') === 'true';
         let inventoryData = [];
         let selectedCategory = 'all';
         let currentViewMode = window.innerWidth < 640 ? 'grid' : 'table';
@@ -457,6 +614,7 @@
         let touchStartY = 0;
 
         document.addEventListener('DOMContentLoaded', () => {
+            applyBranding();
             updateAdminUI();
             switchView(currentViewMode); // תצוגה ברירת מחדל לפי מסך
             fetchLiveSheetData();
@@ -558,7 +716,7 @@
             const indicatorText = document.getElementById('connection-indicator-text');
 
             try {
-                const { data, error } = await supabaseClient.from('inventory').select('*').order('id', { ascending: true });
+                const { data, error } = await supabaseClient.from(CONFIG.TABLE_NAME).select('*').order('id', { ascending: true });
                 if (error) throw error;
 
                 inventoryData = data.map(item => ({
@@ -569,8 +727,8 @@
                     image: item.image_url || ''
                 }));
 
-                indicatorDot.className = "w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]";
-                indicatorText.textContent = "אופיין ופותח על ידי אלעד שושן";
+                indicatorDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]";
+                indicatorText.textContent = "מחובר לענן • נתונים בזמן אמת";
             } catch (error) {
                 console.error(error);
                 indicatorDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse";
@@ -823,7 +981,7 @@
                 // חיבור הכמויות מתמטית
                 const newTotalQty = Number(existingDuplicateItem.quantity) + Number(pendingNewItem.qty);
 
-                const { error } = await supabaseClient.from('inventory')
+                const { error } = await supabaseClient.from(CONFIG.TABLE_NAME)
                     .update({ quantity: String(newTotalQty) })
                     .eq('id', existingDuplicateItem.id);
 
@@ -862,7 +1020,7 @@
 
                 submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> שומר פריט...`;
                 
-                const { error } = await supabaseClient.from('inventory').insert([{
+                const { error } = await supabaseClient.from(CONFIG.TABLE_NAME).insert([{
                     category: cat, name: name, quantity: qty, image_url: finalImageUrl
                 }]);
 
@@ -912,7 +1070,7 @@
             submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> שומר...`;
 
             try {
-                const { error } = await supabaseClient.from('inventory')
+                const { error } = await supabaseClient.from(CONFIG.TABLE_NAME)
                     .update({ name: newName, category: newCat, quantity: newQty })
                     .eq('id', activeEditDataId);
 
@@ -960,7 +1118,7 @@
 
                 submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> מעדכן במערכת...`;
 
-                const { error } = await supabaseClient.from('inventory')
+                const { error } = await supabaseClient.from(CONFIG.TABLE_NAME)
                     .update({ image_url: finalImageUrl })
                     .eq('id', activeEditRowId);
 
@@ -976,6 +1134,9 @@
             }
         }
 
+        // --- מדריך שימוש ---
+        function toggleGuideModal() { document.getElementById('guide-modal').classList.toggle('hidden'); }
+
         // --- מחיקה ---
         function toggleDeleteConfirmModal() { document.getElementById('delete-confirm-modal').classList.toggle('hidden'); }
 
@@ -988,7 +1149,7 @@
         async function executeDeleteRow() {
             if (!activeDeleteRowId) return toggleDeleteConfirmModal();
             try {
-                const { error } = await supabaseClient.from('inventory').delete().eq('id', activeDeleteRowId);
+                const { error } = await supabaseClient.from(CONFIG.TABLE_NAME).delete().eq('id', activeDeleteRowId);
                 if (error) throw error;
                 showToast("הפריט הוסר מהמערכת!"); 
                 toggleDeleteConfirmModal(); 
@@ -1046,7 +1207,7 @@
             if (currentViewMode === 'table') renderTable(getFilteredData()); else renderGrid(getFilteredData());
 
             try {
-                const { error } = await supabaseClient.from('inventory').update({ quantity: newQty }).eq('id', itemId);
+                const { error } = await supabaseClient.from(CONFIG.TABLE_NAME).update({ quantity: newQty }).eq('id', itemId);
                 if (error) throw error;
                 // סנכרון שקט, לא מקפיצים התראה על כל +/- 
             } catch (err) { 
